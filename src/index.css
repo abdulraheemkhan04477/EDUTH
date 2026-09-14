@@ -1,0 +1,239 @@
+@import "tailwindcss";
+
+/* ===== EduFlow Design System Tokens ===== */
+@theme {
+  /* Brand / Primary (Deep Indigo / Royal Blue) */
+  --color-brand-100: #EEF2FF;
+  --color-brand-500: #6366F1;
+  --color-brand-600: #4F46E5;
+  --color-brand-700: #4338CA;
+
+  /* Ink (Deep Slate & Navy) */
+  --color-ink-900: #0F172A;
+  --color-ink-600: #334155;
+  --color-ink-400: #64748B;
+
+  /* Surfaces */
+  --color-surface: #FFFFFF;
+  --color-canvas: #F8FAFC;
+  --color-border: #E2E8F0;
+
+  /* Semantic */
+  --color-success-100: #ECFDF5;
+  --color-success-600: #059669;
+  --color-warning-100: #FEF3C7;
+  --color-warning-600: #D97706;
+  --color-danger-100: #FEF2F2;
+  --color-danger-600: #DC2626;
+  --color-info-100: #EFF6FF;
+  --color-info-600: #2563EB;
+
+  /* Typography */
+  --font-display: 'Sora', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+
+  /* Border Radius */
+  --radius-btn: 8px;
+  --radius-card: 12px;
+  --radius-modal: 16px;
+
+  /* Shadows */
+  --shadow-soft: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 6px 16px -4px rgba(15, 23, 42, 0.06);
+
+  /* Sidebar width */
+  --sidebar-width: 240px;
+  --sidebar-collapsed-width: 64px;
+}
+
+/* ===== Dark Mode Token Overrides ===== */
+html.dark {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --color-canvas: #0B0F17;
+  --color-surface: #151D2A;
+  --color-border: #263346;
+
+  /* Ink (Primary, Secondary, Muted Text) */
+  --color-ink-900: #F8FAFC;
+  --color-ink-600: #CBD5E1;
+  --color-ink-400: #94A3B8;
+
+  /* Brand Colors for Dark Mode */
+  --color-brand-100: #1E1B4B;
+  --color-brand-500: #6366F1;
+  --color-brand-600: #6366F1;
+  --color-brand-700: #818CF8;
+
+  /* Semantic Dark Tints & Accessible Text Colors */
+  --color-success-100: #064E3B;
+  --color-success-600: #34D399;
+  --color-warning-100: #451A03;
+  --color-warning-600: #FBBF24;
+  --color-danger-100: #4C0519;
+  --color-danger-600: #F87171;
+  --color-info-100: #172554;
+  --color-info-600: #60A5FA;
+
+  /* Shadows for Dark Mode */
+  --shadow-soft: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 6px 16px -4px rgba(0, 0, 0, 0.6);
+}
+
+/* ===== Base Layer ===== */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--color-ink-600);
+    background: var(--color-canvas);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    color: var(--color-ink-900);
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  /* Focus ring utility — visible, accessible */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 2px;
+  }
+
+  /* Custom scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink-400);
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ===== Hardcoded Utility Overrides for Dark Mode ===== */
+html.dark .bg-slate-50,
+html.dark .bg-slate-50\/40,
+html.dark .bg-slate-50\/50,
+html.dark .bg-slate-50\/60,
+html.dark .bg-slate-50\/80,
+html.dark .bg-slate-100,
+html.dark .bg-slate-100\/80 {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+html.dark .hover\:bg-slate-100\/80:hover,
+html.dark .hover\:bg-slate-100:hover,
+html.dark .hover\:bg-slate-50\/60:hover,
+html.dark .hover\:bg-slate-50\/50:hover,
+html.dark .hover\:bg-slate-50:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark .border-slate-200,
+html.dark .border-slate-200\/60 {
+  border-color: var(--color-border);
+}
+
+html.dark .text-slate-400 {
+  color: #94A3B8;
+}
+
+html.dark .text-slate-500,
+html.dark .text-slate-600 {
+  color: #CBD5E1;
+}
+
+html.dark .text-slate-700,
+html.dark .text-slate-800,
+html.dark .text-slate-900 {
+  color: #F8FAFC;
+}
+
+/* Light tint badges & cards in Dark Mode */
+html.dark .bg-indigo-50,
+html.dark .bg-indigo-50\/80 {
+  background-color: rgba(99, 102, 241, 0.15);
+  color: #A5B4FC;
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+html.dark .bg-emerald-50,
+html.dark .bg-emerald-50\/80 {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #6EE7B7;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+html.dark .bg-amber-50,
+html.dark .bg-amber-50\/80 {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #FDE68A;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+html.dark .bg-rose-50,
+html.dark .bg-rose-50\/80 {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #FCA5A5;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+html.dark .bg-blue-50,
+html.dark .bg-blue-50\/80 {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #93C5FD;
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Recharts Tooltip styling in Dark Mode */
+html.dark .recharts-default-tooltip {
+  background-color: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-ink-900) !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+
+html.dark .recharts-tooltip-item {
+  color: var(--color-ink-600) !important;
+}
+
+/* Select option & search input polish in Dark Mode */
+html.dark select option {
+  background-color: var(--color-surface);
+  color: var(--color-ink-900);
+}
+
+html.dark input[type="search"]::-webkit-search-cancel-button {
+  filter: invert(0.8);
+}

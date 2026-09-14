@@ -1,0 +1,6735 @@
+
+DO $$
+DECLARE
+  v_college_id TEXT := '13695a78-0105-4bde-bc85-d664bb66637e';
+  v_first_roll TEXT;
+  v_t1_email TEXT;
+  v_t1_pass TEXT;
+  v_t2_email TEXT;
+  v_t2_pass TEXT;
+  v_class_id TEXT;
+  v_class_name TEXT;
+  v_dummy_id UUID;
+BEGIN
+
+  -- Class 1: B.Tech ECE 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'ECE'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'ECE'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech ECE - 1st Year - Section A';
+  v_class_id   := 'class_1_btech_ece_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'ECE', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Payal Rastogi, Ritu Kannaujiya', v_t1_email, 'Room ' || 101, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Payal Rastogi',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'ECE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Payal Rastogi',
+      qualification = 'M.Tech',
+      course = 'B.Tech',
+      department = 'ECE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Ritu Kannaujiya',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'ECE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Ritu Kannaujiya',
+      qualification = 'M.Tech',
+      course = 'B.Tech',
+      department = 'ECE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 2: B.Tech EE 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'EE'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'EE'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech EE - 1st Year - Section A';
+  v_class_id   := 'class_2_btech_ee_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'EE', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Diya Yadav, Ira Srivastava', v_t1_email, 'Room ' || 102, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Diya Yadav',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'EE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Diya Yadav',
+      qualification = 'M.E.',
+      course = 'B.Tech',
+      department = 'EE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Ira Srivastava',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'EE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech (Pursuing Ph.D)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Ira Srivastava',
+      qualification = 'M.Tech (Pursuing Ph.D)',
+      course = 'B.Tech',
+      department = 'EE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 3: B.Tech ME 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'ME'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'ME'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech ME - 1st Year - Section A';
+  v_class_id   := 'class_3_btech_me_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'ME', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Reyansh Awasthi, Isha Srivastava', v_t1_email, 'Room ' || 103, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Reyansh Awasthi',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'ME',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech (Pursuing Ph.D)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Reyansh Awasthi',
+      qualification = 'M.Tech (Pursuing Ph.D)',
+      course = 'B.Tech',
+      department = 'ME',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Isha Srivastava',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'ME',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Isha Srivastava',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'ME',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 4: B.Tech Civil 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'Civil'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'Civil'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech Civil - 1st Year - Section A';
+  v_class_id   := 'class_4_btech_civil_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'Civil', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Riya Mishra, Abhishek Kannaujiya', v_t1_email, 'Room ' || 104, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Riya Mishra',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'Civil',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Riya Mishra',
+      qualification = 'M.Tech',
+      course = 'B.Tech',
+      department = 'Civil',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Abhishek Kannaujiya',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'Civil',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech (Pursuing Ph.D)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Abhishek Kannaujiya',
+      qualification = 'M.Tech (Pursuing Ph.D)',
+      course = 'B.Tech',
+      department = 'Civil',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 5: B.Tech Biotech 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'Biotech'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'Biotech'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech Biotech - 1st Year - Section A';
+  v_class_id   := 'class_5_btech_biotech_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'Biotech', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Meera Maurya, Ayaan Rajput', v_t1_email, 'Room ' || 105, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Meera Maurya',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'Biotech',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Meera Maurya',
+      qualification = 'M.E.',
+      course = 'B.Tech',
+      department = 'Biotech',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Ayaan Rajput',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'Biotech',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Ayaan Rajput',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'Biotech',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 6: B.Tech CSE 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'CSE'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'CSE'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech CSE - 1st Year - Section A';
+  v_class_id   := 'class_6_btech_cse_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'CSE', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Deepak Mishra, Anika Sharma', v_t1_email, 'Room ' || 106, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Deepak Mishra',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'CSE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Deepak Mishra',
+      qualification = 'M.Tech, Ph.D',
+      course = 'B.Tech',
+      department = 'CSE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Anika Sharma',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'CSE',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Anika Sharma',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'CSE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 7: B.Tech IT 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'IT'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'IT'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech IT - 1st Year - Section A';
+  v_class_id   := 'class_7_btech_it_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'IT', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Kiara Dwivedi, Manish Chaudhary', v_t1_email, 'Room ' || 107, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Kiara Dwivedi',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'IT',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Kiara Dwivedi',
+      qualification = 'M.E.',
+      course = 'B.Tech',
+      department = 'IT',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Manish Chaudhary',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'IT',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Manish Chaudhary',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'IT',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 8: B.Tech AIML 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'AIML'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'AIML'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech AIML - 1st Year - Section A';
+  v_class_id   := 'class_8_btech_aiml_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'AIML', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Krishna Nigam, Abhishek Dwivedi', v_t1_email, 'Room ' || 108, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Krishna Nigam',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'AIML',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Krishna Nigam',
+      qualification = 'M.Tech',
+      course = 'B.Tech',
+      department = 'AIML',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Abhishek Dwivedi',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'AIML',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Abhishek Dwivedi',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'AIML',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 9: B.Tech CSD 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'CSD'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'CSD'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech CSD - 1st Year - Section A';
+  v_class_id   := 'class_9_btech_csd_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'CSD', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Anika Rajput, Ravi Yadav', v_t1_email, 'Room ' || 109, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Anika Rajput',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'CSD',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Anika Rajput',
+      qualification = 'M.E.',
+      course = 'B.Tech',
+      department = 'CSD',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Ravi Yadav',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'CSD',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Ravi Yadav',
+      qualification = 'M.E.',
+      course = 'B.Tech',
+      department = 'CSD',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 10: B.Tech ECE 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'ECE'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'ECE'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech ECE - 2nd Year - Section A';
+  v_class_id   := 'class_10_btech_ece_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'ECE', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Ruchi Jaiswal, Ananya Jaiswal', v_t1_email, 'Room ' || 110, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Ruchi Jaiswal',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'ECE',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Ruchi Jaiswal',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'ECE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Ananya Jaiswal',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'ECE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Ananya Jaiswal',
+      qualification = 'M.Tech',
+      course = 'B.Tech',
+      department = 'ECE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 11: B.Tech EE 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'EE'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'EE'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech EE - 2nd Year - Section A';
+  v_class_id   := 'class_11_btech_ee_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'EE', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Ruchi Agarwal, Ravi Gupta', v_t1_email, 'Room ' || 111, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Ruchi Agarwal',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'EE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech (Pursuing Ph.D)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Ruchi Agarwal',
+      qualification = 'M.Tech (Pursuing Ph.D)',
+      course = 'B.Tech',
+      department = 'EE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Ravi Gupta',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'EE',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Ravi Gupta',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'EE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 12: B.Tech ME 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'ME'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'ME'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech ME - 2nd Year - Section A';
+  v_class_id   := 'class_12_btech_me_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'ME', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Rahul Bharti, Isha Shukla', v_t1_email, 'Room ' || 112, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Rahul Bharti',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'ME',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech (Pursuing Ph.D)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Rahul Bharti',
+      qualification = 'M.Tech (Pursuing Ph.D)',
+      course = 'B.Tech',
+      department = 'ME',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Isha Shukla',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'ME',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Isha Shukla',
+      qualification = 'M.E.',
+      course = 'B.Tech',
+      department = 'ME',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 13: B.Tech Civil 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'Civil'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'Civil'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech Civil - 2nd Year - Section A';
+  v_class_id   := 'class_13_btech_civil_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'Civil', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Shalini Nigam, Swati Kannaujiya', v_t1_email, 'Room ' || 113, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Shalini Nigam',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'Civil',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Shalini Nigam',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'Civil',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Swati Kannaujiya',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'Civil',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Swati Kannaujiya',
+      qualification = 'M.Tech, Ph.D',
+      course = 'B.Tech',
+      department = 'Civil',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 14: B.Tech Biotech 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'Biotech'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'Biotech'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech Biotech - 2nd Year - Section A';
+  v_class_id   := 'class_14_btech_biotech_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'Biotech', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Kiara Singh, Manisha Bajpai', v_t1_email, 'Room ' || 114, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Kiara Singh',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'Biotech',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Kiara Singh',
+      qualification = 'M.E.',
+      course = 'B.Tech',
+      department = 'Biotech',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Manisha Bajpai',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'Biotech',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Manisha Bajpai',
+      qualification = 'M.Tech, Ph.D',
+      course = 'B.Tech',
+      department = 'Biotech',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 15: B.Tech CSE 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'CSE'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'CSE'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech CSE - 2nd Year - Section A';
+  v_class_id   := 'class_15_btech_cse_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'CSE', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Rajesh Prasad, Nisha Nigam', v_t1_email, 'Room ' || 115, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Rajesh Prasad',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'CSE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech (Pursuing Ph.D)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Rajesh Prasad',
+      qualification = 'M.Tech (Pursuing Ph.D)',
+      course = 'B.Tech',
+      department = 'CSE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Nisha Nigam',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'CSE',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Nisha Nigam',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'CSE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 16: B.Tech IT 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'IT'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'IT'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech IT - 2nd Year - Section A';
+  v_class_id   := 'class_16_btech_it_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'IT', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Harsh Srivastava, Vikram Srivastava', v_t1_email, 'Room ' || 116, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Harsh Srivastava',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'IT',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Harsh Srivastava',
+      qualification = 'M.Tech, Ph.D',
+      course = 'B.Tech',
+      department = 'IT',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Vikram Srivastava',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'IT',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Vikram Srivastava',
+      qualification = 'M.E.',
+      course = 'B.Tech',
+      department = 'IT',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 17: B.Tech AIML 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'AIML'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'AIML'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech AIML - 2nd Year - Section A';
+  v_class_id   := 'class_17_btech_aiml_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'AIML', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Kritika Dubey, Yash Yadav', v_t1_email, 'Room ' || 117, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Kritika Dubey',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'AIML',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Kritika Dubey',
+      qualification = 'M.Tech',
+      course = 'B.Tech',
+      department = 'AIML',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Yash Yadav',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'AIML',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Yash Yadav',
+      qualification = 'M.Tech',
+      course = 'B.Tech',
+      department = 'AIML',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 18: B.Tech CSD 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'CSD'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'CSD'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech CSD - 2nd Year - Section A';
+  v_class_id   := 'class_18_btech_csd_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'CSD', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Aditi Sharma, Arun Rajput', v_t1_email, 'Room ' || 118, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Aditi Sharma',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'CSD',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Aditi Sharma',
+      qualification = 'M.Tech',
+      course = 'B.Tech',
+      department = 'CSD',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Arun Rajput',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'CSD',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Arun Rajput',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'CSD',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 19: B.Tech ECE 3rd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'ECE'
+    AND year = '3rd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'ECE'
+      AND year = '3rd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech ECE - 3rd Year - Section A';
+  v_class_id   := 'class_19_btech_ece_3rdyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'ECE', '3rd Year', 'Semester 5', 'Section A', v_class_name, 'Kavita Singh, Neha Rajput', v_t1_email, 'Room ' || 119, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Kavita Singh',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'ECE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Kavita Singh',
+      qualification = 'M.Tech',
+      course = 'B.Tech',
+      department = 'ECE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Neha Rajput',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'ECE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech (Pursuing Ph.D)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Neha Rajput',
+      qualification = 'M.Tech (Pursuing Ph.D)',
+      course = 'B.Tech',
+      department = 'ECE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 20: B.Tech EE 3rd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'EE'
+    AND year = '3rd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'EE'
+      AND year = '3rd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech EE - 3rd Year - Section A';
+  v_class_id   := 'class_20_btech_ee_3rdyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'EE', '3rd Year', 'Semester 5', 'Section A', v_class_name, 'Vikram Dwivedi, Naveen Bajpai', v_t1_email, 'Room ' || 120, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Vikram Dwivedi',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'EE',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Vikram Dwivedi',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'EE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Naveen Bajpai',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'EE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech (Pursuing Ph.D)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Naveen Bajpai',
+      qualification = 'M.Tech (Pursuing Ph.D)',
+      course = 'B.Tech',
+      department = 'EE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 21: B.Tech ME 3rd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'ME'
+    AND year = '3rd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'ME'
+      AND year = '3rd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech ME - 3rd Year - Section A';
+  v_class_id   := 'class_21_btech_me_3rdyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'ME', '3rd Year', 'Semester 5', 'Section A', v_class_name, 'Mohit Pandey, Myra Nigam', v_t1_email, 'Room ' || 121, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Mohit Pandey',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'ME',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Mohit Pandey',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'ME',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Myra Nigam',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'ME',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Myra Nigam',
+      qualification = 'M.E.',
+      course = 'B.Tech',
+      department = 'ME',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 22: B.Tech Civil 3rd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'Civil'
+    AND year = '3rd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'Civil'
+      AND year = '3rd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech Civil - 3rd Year - Section A';
+  v_class_id   := 'class_22_btech_civil_3rdyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'Civil', '3rd Year', 'Semester 5', 'Section A', v_class_name, 'Preeti Awasthi, Aarav Kannojia', v_t1_email, 'Room ' || 122, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Preeti Awasthi',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'Civil',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Preeti Awasthi',
+      qualification = 'M.Tech, Ph.D',
+      course = 'B.Tech',
+      department = 'Civil',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Aarav Kannojia',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'Civil',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Aarav Kannojia',
+      qualification = 'M.Tech, Ph.D',
+      course = 'B.Tech',
+      department = 'Civil',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 23: B.Tech Biotech 3rd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'Biotech'
+    AND year = '3rd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'Biotech'
+      AND year = '3rd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech Biotech - 3rd Year - Section A';
+  v_class_id   := 'class_23_btech_biotech_3rdyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'Biotech', '3rd Year', 'Semester 5', 'Section A', v_class_name, 'Naveen Bajpai, Amit Rajput', v_t1_email, 'Room ' || 123, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Naveen Bajpai',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'Biotech',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Naveen Bajpai',
+      qualification = 'M.E.',
+      course = 'B.Tech',
+      department = 'Biotech',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Amit Rajput',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'Biotech',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech (Pursuing Ph.D)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Amit Rajput',
+      qualification = 'M.Tech (Pursuing Ph.D)',
+      course = 'B.Tech',
+      department = 'Biotech',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 24: B.Tech CSE 3rd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'CSE'
+    AND year = '3rd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'CSE'
+      AND year = '3rd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech CSE - 3rd Year - Section A';
+  v_class_id   := 'class_24_btech_cse_3rdyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'CSE', '3rd Year', 'Semester 5', 'Section A', v_class_name, 'Rajesh Dubey, Arjun Gupta', v_t1_email, 'Room ' || 124, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Rajesh Dubey',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'CSE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Rajesh Dubey',
+      qualification = 'M.E.',
+      course = 'B.Tech',
+      department = 'CSE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Arjun Gupta',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'CSE',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Arjun Gupta',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'CSE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 25: B.Tech IT 3rd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'IT'
+    AND year = '3rd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'IT'
+      AND year = '3rd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech IT - 3rd Year - Section A';
+  v_class_id   := 'class_25_btech_it_3rdyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'IT', '3rd Year', 'Semester 5', 'Section A', v_class_name, 'Rahul Sharma, Manisha Saroj', v_t1_email, 'Room ' || 125, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Rahul Sharma',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'IT',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Rahul Sharma',
+      qualification = 'M.E.',
+      course = 'B.Tech',
+      department = 'IT',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Manisha Saroj',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'IT',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Manisha Saroj',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'IT',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 26: B.Tech AIML 3rd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'AIML'
+    AND year = '3rd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'AIML'
+      AND year = '3rd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech AIML - 3rd Year - Section A';
+  v_class_id   := 'class_26_btech_aiml_3rdyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'AIML', '3rd Year', 'Semester 5', 'Section A', v_class_name, 'Ravi Bajpai, Deepak Rastogi', v_t1_email, 'Room ' || 126, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Ravi Bajpai',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'AIML',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Ravi Bajpai',
+      qualification = 'M.Tech, Ph.D',
+      course = 'B.Tech',
+      department = 'AIML',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Deepak Rastogi',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'AIML',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Deepak Rastogi',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'AIML',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 27: B.Tech CSD 3rd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'CSD'
+    AND year = '3rd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'CSD'
+      AND year = '3rd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech CSD - 3rd Year - Section A';
+  v_class_id   := 'class_27_btech_csd_3rdyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'CSD', '3rd Year', 'Semester 5', 'Section A', v_class_name, 'Rohan Nigam, Naveen Dwivedi', v_t1_email, 'Room ' || 127, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Rohan Nigam',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'CSD',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Rohan Nigam',
+      qualification = 'M.Tech, Ph.D',
+      course = 'B.Tech',
+      department = 'CSD',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Naveen Dwivedi',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'CSD',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Naveen Dwivedi',
+      qualification = 'M.Tech, Ph.D',
+      course = 'B.Tech',
+      department = 'CSD',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 28: B.Tech ECE 4th Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'ECE'
+    AND year = '4th Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'ECE'
+      AND year = '4th Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech ECE - 4th Year - Section A';
+  v_class_id   := 'class_28_btech_ece_4thyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'ECE', '4th Year', 'Semester 7', 'Section A', v_class_name, 'Payal Srivastava, Aadesh Jaiswal', v_t1_email, 'Room ' || 128, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Payal Srivastava',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'ECE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Payal Srivastava',
+      qualification = 'M.Tech, Ph.D',
+      course = 'B.Tech',
+      department = 'ECE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Aadesh Jaiswal',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'ECE',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Aadesh Jaiswal',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'ECE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 29: B.Tech EE 4th Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'EE'
+    AND year = '4th Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'EE'
+      AND year = '4th Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech EE - 4th Year - Section A';
+  v_class_id   := 'class_29_btech_ee_4thyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'EE', '4th Year', 'Semester 7', 'Section A', v_class_name, 'Yash Verma, Gaurav Srivastava', v_t1_email, 'Room ' || 129, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Yash Verma',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'EE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech (Pursuing Ph.D)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Yash Verma',
+      qualification = 'M.Tech (Pursuing Ph.D)',
+      course = 'B.Tech',
+      department = 'EE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Gaurav Srivastava',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'EE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech (Pursuing Ph.D)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Gaurav Srivastava',
+      qualification = 'M.Tech (Pursuing Ph.D)',
+      course = 'B.Tech',
+      department = 'EE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 30: B.Tech ME 4th Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'ME'
+    AND year = '4th Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'ME'
+      AND year = '4th Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech ME - 4th Year - Section A';
+  v_class_id   := 'class_30_btech_me_4thyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'ME', '4th Year', 'Semester 7', 'Section A', v_class_name, 'Pari Mishra, Deepak Kannaujiya', v_t1_email, 'Room ' || 130, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Pari Mishra',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'ME',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Pari Mishra',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'ME',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Deepak Kannaujiya',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'ME',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Deepak Kannaujiya',
+      qualification = 'M.Tech, Ph.D',
+      course = 'B.Tech',
+      department = 'ME',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 31: B.Tech Civil 4th Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'Civil'
+    AND year = '4th Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'Civil'
+      AND year = '4th Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech Civil - 4th Year - Section A';
+  v_class_id   := 'class_31_btech_civil_4thyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'Civil', '4th Year', 'Semester 7', 'Section A', v_class_name, 'Neha Rajput, Manisha Dwivedi', v_t1_email, 'Room ' || 131, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Neha Rajput',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'Civil',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech (Pursuing Ph.D)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Neha Rajput',
+      qualification = 'M.Tech (Pursuing Ph.D)',
+      course = 'B.Tech',
+      department = 'Civil',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Manisha Dwivedi',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'Civil',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Manisha Dwivedi',
+      qualification = 'M.Tech',
+      course = 'B.Tech',
+      department = 'Civil',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 32: B.Tech Biotech 4th Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'Biotech'
+    AND year = '4th Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'Biotech'
+      AND year = '4th Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech Biotech - 4th Year - Section A';
+  v_class_id   := 'class_32_btech_biotech_4thyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'Biotech', '4th Year', 'Semester 7', 'Section A', v_class_name, 'Vikram Rastogi, Aditya Bharti', v_t1_email, 'Room ' || 132, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Vikram Rastogi',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'Biotech',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Vikram Rastogi',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'Biotech',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Aditya Bharti',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'Biotech',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Aditya Bharti',
+      qualification = 'M.Tech, Ph.D',
+      course = 'B.Tech',
+      department = 'Biotech',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 33: B.Tech CSE 4th Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'CSE'
+    AND year = '4th Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'CSE'
+      AND year = '4th Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech CSE - 4th Year - Section A';
+  v_class_id   := 'class_33_btech_cse_4thyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'CSE', '4th Year', 'Semester 7', 'Section A', v_class_name, 'Navya Pandey, Diya Nigam', v_t1_email, 'Room ' || 133, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Navya Pandey',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'CSE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Navya Pandey',
+      qualification = 'M.Tech, Ph.D',
+      course = 'B.Tech',
+      department = 'CSE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Diya Nigam',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'CSE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech (Pursuing Ph.D)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Diya Nigam',
+      qualification = 'M.Tech (Pursuing Ph.D)',
+      course = 'B.Tech',
+      department = 'CSE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 34: B.Tech IT 4th Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'IT'
+    AND year = '4th Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'IT'
+      AND year = '4th Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech IT - 4th Year - Section A';
+  v_class_id   := 'class_34_btech_it_4thyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'IT', '4th Year', 'Semester 7', 'Section A', v_class_name, 'Isha Awasthi, Tanvi Sharma', v_t1_email, 'Room ' || 134, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Isha Awasthi',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'IT',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech (Pursuing Ph.D)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Isha Awasthi',
+      qualification = 'M.Tech (Pursuing Ph.D)',
+      course = 'B.Tech',
+      department = 'IT',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Tanvi Sharma',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'IT',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Tanvi Sharma',
+      qualification = 'M.Tech, Ph.D',
+      course = 'B.Tech',
+      department = 'IT',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 35: B.Tech AIML 4th Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'AIML'
+    AND year = '4th Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'AIML'
+      AND year = '4th Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech AIML - 4th Year - Section A';
+  v_class_id   := 'class_35_btech_aiml_4thyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'AIML', '4th Year', 'Semester 7', 'Section A', v_class_name, 'Aadesh Jaiswal, Anil Rajput', v_t1_email, 'Room ' || 135, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Aadesh Jaiswal',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'AIML',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Aadesh Jaiswal',
+      qualification = 'M.Tech',
+      course = 'B.Tech',
+      department = 'AIML',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Anil Rajput',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'AIML',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech (Pursuing Ph.D)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Anil Rajput',
+      qualification = 'M.Tech (Pursuing Ph.D)',
+      course = 'B.Tech',
+      department = 'AIML',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 36: B.Tech CSD 4th Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'B.Tech'
+    AND branch = 'CSD'
+    AND year = '4th Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'B.Tech'
+      AND branch = 'CSD'
+      AND year = '4th Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'B.Tech CSD - 4th Year - Section A';
+  v_class_id   := 'class_36_btech_csd_4thyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'B.Tech', 'CSD', '4th Year', 'Semester 7', 'Section A', v_class_name, 'Arjun Prasad, Anika Prasad', v_t1_email, 'Room ' || 136, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Arjun Prasad',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'CSD',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Arjun Prasad',
+      qualification = 'Ph.D',
+      course = 'B.Tech',
+      department = 'CSD',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Anika Prasad',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'B.Tech',
+        'department', 'CSD',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech (Pursuing Ph.D)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Anika Prasad',
+      qualification = 'M.Tech (Pursuing Ph.D)',
+      course = 'B.Tech',
+      department = 'CSD',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 37: Diploma Civil 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'Diploma'
+    AND branch = 'Civil'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'Diploma'
+      AND branch = 'Civil'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'Diploma Civil - 1st Year - Section A';
+  v_class_id   := 'class_37_diploma_civil_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'Diploma', 'Civil', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Sara Kannojia, Abhishek Maurya', v_t1_email, 'Room ' || 137, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Sara Kannojia',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'Civil',
+        'position', 'Assistant Professor',
+        'qualification', 'B.Tech, M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Sara Kannojia',
+      qualification = 'B.Tech, M.Tech',
+      course = 'Diploma',
+      department = 'Civil',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Abhishek Maurya',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'Civil',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Abhishek Maurya',
+      qualification = 'M.E.',
+      course = 'Diploma',
+      department = 'Civil',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 38: Diploma ME 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'Diploma'
+    AND branch = 'ME'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'Diploma'
+      AND branch = 'ME'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'Diploma ME - 1st Year - Section A';
+  v_class_id   := 'class_38_diploma_me_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'Diploma', 'ME', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Reyansh Verma, Manish Srivastava', v_t1_email, 'Room ' || 138, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Reyansh Verma',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'ME',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Reyansh Verma',
+      qualification = 'M.Tech',
+      course = 'Diploma',
+      department = 'ME',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Manish Srivastava',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'ME',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Manish Srivastava',
+      qualification = 'M.Tech',
+      course = 'Diploma',
+      department = 'ME',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 39: Diploma IT 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'Diploma'
+    AND branch = 'IT'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'Diploma'
+      AND branch = 'IT'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'Diploma IT - 1st Year - Section A';
+  v_class_id   := 'class_39_diploma_it_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'Diploma', 'IT', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Manish Tiwari, Swati Tiwari', v_t1_email, 'Room ' || 139, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Manish Tiwari',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'IT',
+        'position', 'Assistant Professor',
+        'qualification', 'Diploma, B.Tech, M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Manish Tiwari',
+      qualification = 'Diploma, B.Tech, M.Tech',
+      course = 'Diploma',
+      department = 'IT',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Swati Tiwari',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'IT',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Swati Tiwari',
+      qualification = 'M.E.',
+      course = 'Diploma',
+      department = 'IT',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 40: Diploma CS 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'Diploma'
+    AND branch = 'CS'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'Diploma'
+      AND branch = 'CS'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'Diploma CS - 1st Year - Section A';
+  v_class_id   := 'class_40_diploma_cs_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'Diploma', 'CS', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Rahul Bharti, Naveen Verma', v_t1_email, 'Room ' || 140, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Rahul Bharti',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'CS',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Rahul Bharti',
+      qualification = 'M.Tech',
+      course = 'Diploma',
+      department = 'CS',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Naveen Verma',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'CS',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Naveen Verma',
+      qualification = 'M.Tech',
+      course = 'Diploma',
+      department = 'CS',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 41: Diploma EE 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'Diploma'
+    AND branch = 'EE'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'Diploma'
+      AND branch = 'EE'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'Diploma EE - 1st Year - Section A';
+  v_class_id   := 'class_41_diploma_ee_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'Diploma', 'EE', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Vikram Nigam, Anjali Chaudhary', v_t1_email, 'Room ' || 141, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Vikram Nigam',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'EE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Vikram Nigam',
+      qualification = 'M.Tech',
+      course = 'Diploma',
+      department = 'EE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Anjali Chaudhary',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'EE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Anjali Chaudhary',
+      qualification = 'M.Tech',
+      course = 'Diploma',
+      department = 'EE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 42: Diploma EC 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'Diploma'
+    AND branch = 'EC'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'Diploma'
+      AND branch = 'EC'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'Diploma EC - 1st Year - Section A';
+  v_class_id   := 'class_42_diploma_ec_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'Diploma', 'EC', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Ritu Pandey, Kunal Gupta', v_t1_email, 'Room ' || 142, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Ritu Pandey',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'EC',
+        'position', 'Assistant Professor',
+        'qualification', 'Diploma, B.Tech, M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Ritu Pandey',
+      qualification = 'Diploma, B.Tech, M.Tech',
+      course = 'Diploma',
+      department = 'EC',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Kunal Gupta',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'EC',
+        'position', 'Assistant Professor',
+        'qualification', 'B.Tech, M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Kunal Gupta',
+      qualification = 'B.Tech, M.Tech',
+      course = 'Diploma',
+      department = 'EC',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 43: Diploma Civil 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'Diploma'
+    AND branch = 'Civil'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'Diploma'
+      AND branch = 'Civil'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'Diploma Civil - 2nd Year - Section A';
+  v_class_id   := 'class_43_diploma_civil_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'Diploma', 'Civil', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Saurabh Awasthi, Aadarsh Bharti', v_t1_email, 'Room ' || 143, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Saurabh Awasthi',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'Civil',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Saurabh Awasthi',
+      qualification = 'M.E.',
+      course = 'Diploma',
+      department = 'Civil',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Aadarsh Bharti',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'Civil',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Aadarsh Bharti',
+      qualification = 'M.E.',
+      course = 'Diploma',
+      department = 'Civil',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 44: Diploma ME 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'Diploma'
+    AND branch = 'ME'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'Diploma'
+      AND branch = 'ME'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'Diploma ME - 2nd Year - Section A';
+  v_class_id   := 'class_44_diploma_me_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'Diploma', 'ME', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Mohit Bajpai, Aditya Kumar', v_t1_email, 'Room ' || 144, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Mohit Bajpai',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'ME',
+        'position', 'Assistant Professor',
+        'qualification', 'B.Tech, M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Mohit Bajpai',
+      qualification = 'B.Tech, M.Tech',
+      course = 'Diploma',
+      department = 'ME',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Aditya Kumar',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'ME',
+        'position', 'Assistant Professor',
+        'qualification', 'Diploma, B.Tech, M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Aditya Kumar',
+      qualification = 'Diploma, B.Tech, M.Tech',
+      course = 'Diploma',
+      department = 'ME',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 45: Diploma IT 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'Diploma'
+    AND branch = 'IT'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'Diploma'
+      AND branch = 'IT'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'Diploma IT - 2nd Year - Section A';
+  v_class_id   := 'class_45_diploma_it_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'Diploma', 'IT', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Aadarsh Prasad, Gaurav Shukla', v_t1_email, 'Room ' || 145, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Aadarsh Prasad',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'IT',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Aadarsh Prasad',
+      qualification = 'M.E.',
+      course = 'Diploma',
+      department = 'IT',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Gaurav Shukla',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'IT',
+        'position', 'Assistant Professor',
+        'qualification', 'B.Tech, M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Gaurav Shukla',
+      qualification = 'B.Tech, M.Tech',
+      course = 'Diploma',
+      department = 'IT',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 46: Diploma CS 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'Diploma'
+    AND branch = 'CS'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'Diploma'
+      AND branch = 'CS'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'Diploma CS - 2nd Year - Section A';
+  v_class_id   := 'class_46_diploma_cs_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'Diploma', 'CS', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Sandeep Chauhan, Krishna Gupta', v_t1_email, 'Room ' || 146, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Sandeep Chauhan',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'CS',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Sandeep Chauhan',
+      qualification = 'M.E.',
+      course = 'Diploma',
+      department = 'CS',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Krishna Gupta',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'CS',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Krishna Gupta',
+      qualification = 'M.Tech',
+      course = 'Diploma',
+      department = 'CS',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 47: Diploma EE 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'Diploma'
+    AND branch = 'EE'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'Diploma'
+      AND branch = 'EE'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'Diploma EE - 2nd Year - Section A';
+  v_class_id   := 'class_47_diploma_ee_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'Diploma', 'EE', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Manisha Verma, Manish Yadav', v_t1_email, 'Room ' || 147, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Manisha Verma',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'EE',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Manisha Verma',
+      qualification = 'M.E.',
+      course = 'Diploma',
+      department = 'EE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Manish Yadav',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'EE',
+        'position', 'Assistant Professor',
+        'qualification', 'B.Tech, M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Manish Yadav',
+      qualification = 'B.Tech, M.Tech',
+      course = 'Diploma',
+      department = 'EE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 48: Diploma EC 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'Diploma'
+    AND branch = 'EC'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'Diploma'
+      AND branch = 'EC'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'Diploma EC - 2nd Year - Section A';
+  v_class_id   := 'class_48_diploma_ec_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'Diploma', 'EC', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Riya Mishra, Ayaan Dubey', v_t1_email, 'Room ' || 148, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Riya Mishra',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'EC',
+        'position', 'Assistant Professor',
+        'qualification', 'B.Tech, M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Riya Mishra',
+      qualification = 'B.Tech, M.Tech',
+      course = 'Diploma',
+      department = 'EC',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Ayaan Dubey',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'EC',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Ayaan Dubey',
+      qualification = 'M.Tech',
+      course = 'Diploma',
+      department = 'EC',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 49: Diploma Civil 3rd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'Diploma'
+    AND branch = 'Civil'
+    AND year = '3rd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'Diploma'
+      AND branch = 'Civil'
+      AND year = '3rd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'Diploma Civil - 3rd Year - Section A';
+  v_class_id   := 'class_49_diploma_civil_3rdyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'Diploma', 'Civil', '3rd Year', 'Semester 5', 'Section A', v_class_name, 'Aadesh Agarwal, Vandana Bharti', v_t1_email, 'Room ' || 149, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Aadesh Agarwal',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'Civil',
+        'position', 'Assistant Professor',
+        'qualification', 'Diploma, B.Tech, M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Aadesh Agarwal',
+      qualification = 'Diploma, B.Tech, M.Tech',
+      course = 'Diploma',
+      department = 'Civil',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Vandana Bharti',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'Civil',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Vandana Bharti',
+      qualification = 'M.E.',
+      course = 'Diploma',
+      department = 'Civil',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 50: Diploma ME 3rd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'Diploma'
+    AND branch = 'ME'
+    AND year = '3rd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'Diploma'
+      AND branch = 'ME'
+      AND year = '3rd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'Diploma ME - 3rd Year - Section A';
+  v_class_id   := 'class_50_diploma_me_3rdyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'Diploma', 'ME', '3rd Year', 'Semester 5', 'Section A', v_class_name, 'Ankit Tripathi, Komal Gupta', v_t1_email, 'Room ' || 150, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Ankit Tripathi',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'ME',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Ankit Tripathi',
+      qualification = 'M.E.',
+      course = 'Diploma',
+      department = 'ME',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Komal Gupta',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'ME',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Komal Gupta',
+      qualification = 'M.Tech',
+      course = 'Diploma',
+      department = 'ME',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 51: Diploma IT 3rd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'Diploma'
+    AND branch = 'IT'
+    AND year = '3rd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'Diploma'
+      AND branch = 'IT'
+      AND year = '3rd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'Diploma IT - 3rd Year - Section A';
+  v_class_id   := 'class_51_diploma_it_3rdyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'Diploma', 'IT', '3rd Year', 'Semester 5', 'Section A', v_class_name, 'Sneha Awasthi, Rekha Dwivedi', v_t1_email, 'Room ' || 151, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Sneha Awasthi',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'IT',
+        'position', 'Assistant Professor',
+        'qualification', 'B.Tech, M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Sneha Awasthi',
+      qualification = 'B.Tech, M.Tech',
+      course = 'Diploma',
+      department = 'IT',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Rekha Dwivedi',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'IT',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Rekha Dwivedi',
+      qualification = 'M.E.',
+      course = 'Diploma',
+      department = 'IT',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 52: Diploma CS 3rd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'Diploma'
+    AND branch = 'CS'
+    AND year = '3rd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'Diploma'
+      AND branch = 'CS'
+      AND year = '3rd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'Diploma CS - 3rd Year - Section A';
+  v_class_id   := 'class_52_diploma_cs_3rdyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'Diploma', 'CS', '3rd Year', 'Semester 5', 'Section A', v_class_name, 'Deepak Shukla, Ritu Mishra', v_t1_email, 'Room ' || 152, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Deepak Shukla',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'CS',
+        'position', 'Assistant Professor',
+        'qualification', 'Diploma, B.Tech, M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Deepak Shukla',
+      qualification = 'Diploma, B.Tech, M.Tech',
+      course = 'Diploma',
+      department = 'CS',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Ritu Mishra',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'CS',
+        'position', 'Assistant Professor',
+        'qualification', 'M.E.',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Ritu Mishra',
+      qualification = 'M.E.',
+      course = 'Diploma',
+      department = 'CS',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 53: Diploma EE 3rd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'Diploma'
+    AND branch = 'EE'
+    AND year = '3rd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'Diploma'
+      AND branch = 'EE'
+      AND year = '3rd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'Diploma EE - 3rd Year - Section A';
+  v_class_id   := 'class_53_diploma_ee_3rdyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'Diploma', 'EE', '3rd Year', 'Semester 5', 'Section A', v_class_name, 'Manisha Yadav, Arun Bajpai', v_t1_email, 'Room ' || 153, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Manisha Yadav',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'EE',
+        'position', 'Assistant Professor',
+        'qualification', 'B.Tech, M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Manisha Yadav',
+      qualification = 'B.Tech, M.Tech',
+      course = 'Diploma',
+      department = 'EE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Arun Bajpai',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'EE',
+        'position', 'Assistant Professor',
+        'qualification', 'B.Tech, M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Arun Bajpai',
+      qualification = 'B.Tech, M.Tech',
+      course = 'Diploma',
+      department = 'EE',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 54: Diploma EC 3rd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'Diploma'
+    AND branch = 'EC'
+    AND year = '3rd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'Diploma'
+      AND branch = 'EC'
+      AND year = '3rd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'Diploma EC - 3rd Year - Section A';
+  v_class_id   := 'class_54_diploma_ec_3rdyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'Diploma', 'EC', '3rd Year', 'Semester 5', 'Section A', v_class_name, 'Manish Kannojia, Vivaan Bajpai', v_t1_email, 'Room ' || 154, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Manish Kannojia',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'EC',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Manish Kannojia',
+      qualification = 'M.Tech',
+      course = 'Diploma',
+      department = 'EC',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Vivaan Bajpai',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'Diploma',
+        'department', 'EC',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Tech',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Vivaan Bajpai',
+      qualification = 'M.Tech',
+      course = 'Diploma',
+      department = 'EC',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 55: MBA Finance 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'MBA'
+    AND branch = 'Finance'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'MBA'
+      AND branch = 'Finance'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'MBA Finance - 1st Year - Section A';
+  v_class_id   := 'class_55_mba_finance_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'MBA', 'Finance', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Ruchi Prasad, Kritika Shukla', v_t1_email, 'Room ' || 155, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Ruchi Prasad',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'Finance',
+        'position', 'Assistant Professor',
+        'qualification', 'MBA, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Ruchi Prasad',
+      qualification = 'MBA, Ph.D',
+      course = 'MBA',
+      department = 'Finance',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Kritika Shukla',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'Finance',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Com, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Kritika Shukla',
+      qualification = 'M.Com, Ph.D',
+      course = 'MBA',
+      department = 'Finance',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 56: MBA Marketing 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'MBA'
+    AND branch = 'Marketing'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'MBA'
+      AND branch = 'Marketing'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'MBA Marketing - 1st Year - Section A';
+  v_class_id   := 'class_56_mba_marketing_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'MBA', 'Marketing', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Aditi Mishra, Ravi Kannojia', v_t1_email, 'Room ' || 156, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Aditi Mishra',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'Marketing',
+        'position', 'Assistant Professor',
+        'qualification', 'MBA, UGC-NET',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Aditi Mishra',
+      qualification = 'MBA, UGC-NET',
+      course = 'MBA',
+      department = 'Marketing',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Ravi Kannojia',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'Marketing',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D (Management)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Ravi Kannojia',
+      qualification = 'Ph.D (Management)',
+      course = 'MBA',
+      department = 'Marketing',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 57: MBA HR 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'MBA'
+    AND branch = 'HR'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'MBA'
+      AND branch = 'HR'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'MBA HR - 1st Year - Section A';
+  v_class_id   := 'class_57_mba_hr_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'MBA', 'HR', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Abhishek Jaiswal, Saurabh Mishra', v_t1_email, 'Room ' || 157, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Abhishek Jaiswal',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'HR',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Com, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Abhishek Jaiswal',
+      qualification = 'M.Com, Ph.D',
+      course = 'MBA',
+      department = 'HR',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Saurabh Mishra',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'HR',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Com, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Saurabh Mishra',
+      qualification = 'M.Com, Ph.D',
+      course = 'MBA',
+      department = 'HR',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 58: MBA International Business 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'MBA'
+    AND branch = 'International Business'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'MBA'
+      AND branch = 'International Business'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'MBA International Business - 1st Year - Section A';
+  v_class_id   := 'class_58_mba_internationalbusiness_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'MBA', 'International Business', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Nilesh Bajpai, Harsh Singh', v_t1_email, 'Room ' || 158, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Nilesh Bajpai',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'International Business',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Com, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Nilesh Bajpai',
+      qualification = 'M.Com, Ph.D',
+      course = 'MBA',
+      department = 'International Business',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Harsh Singh',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'International Business',
+        'position', 'Assistant Professor',
+        'qualification', 'MBA, UGC-NET',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Harsh Singh',
+      qualification = 'MBA, UGC-NET',
+      course = 'MBA',
+      department = 'International Business',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 59: MBA Business Analytics 1st Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'MBA'
+    AND branch = 'Business Analytics'
+    AND year = '1st Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'MBA'
+      AND branch = 'Business Analytics'
+      AND year = '1st Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'MBA Business Analytics - 1st Year - Section A';
+  v_class_id   := 'class_59_mba_businessanalytics_1styear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'MBA', 'Business Analytics', '1st Year', 'Semester 1', 'Section A', v_class_name, 'Sandeep Tripathi, Kunal Mishra', v_t1_email, 'Room ' || 159, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Sandeep Tripathi',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'Business Analytics',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Com, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Sandeep Tripathi',
+      qualification = 'M.Com, Ph.D',
+      course = 'MBA',
+      department = 'Business Analytics',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Kunal Mishra',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'Business Analytics',
+        'position', 'Assistant Professor',
+        'qualification', 'MBA, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Kunal Mishra',
+      qualification = 'MBA, Ph.D',
+      course = 'MBA',
+      department = 'Business Analytics',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 60: MBA Finance 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'MBA'
+    AND branch = 'Finance'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'MBA'
+      AND branch = 'Finance'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'MBA Finance - 2nd Year - Section A';
+  v_class_id   := 'class_60_mba_finance_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'MBA', 'Finance', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Nikhil Chauhan, Meera Chauhan', v_t1_email, 'Room ' || 160, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Nikhil Chauhan',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'Finance',
+        'position', 'Assistant Professor',
+        'qualification', 'MBA, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Nikhil Chauhan',
+      qualification = 'MBA, Ph.D',
+      course = 'MBA',
+      department = 'Finance',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Meera Chauhan',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'Finance',
+        'position', 'Assistant Professor',
+        'qualification', 'MBA, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Meera Chauhan',
+      qualification = 'MBA, Ph.D',
+      course = 'MBA',
+      department = 'Finance',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 61: MBA Marketing 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'MBA'
+    AND branch = 'Marketing'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'MBA'
+      AND branch = 'Marketing'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'MBA Marketing - 2nd Year - Section A';
+  v_class_id   := 'class_61_mba_marketing_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'MBA', 'Marketing', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Yash Nigam, Simran Nigam', v_t1_email, 'Room ' || 161, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Yash Nigam',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'Marketing',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D (Management)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Yash Nigam',
+      qualification = 'Ph.D (Management)',
+      course = 'MBA',
+      department = 'Marketing',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Simran Nigam',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'Marketing',
+        'position', 'Assistant Professor',
+        'qualification', 'MBA, UGC-NET',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Simran Nigam',
+      qualification = 'MBA, UGC-NET',
+      course = 'MBA',
+      department = 'Marketing',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 62: MBA HR 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'MBA'
+    AND branch = 'HR'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'MBA'
+      AND branch = 'HR'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'MBA HR - 2nd Year - Section A';
+  v_class_id   := 'class_62_mba_hr_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'MBA', 'HR', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Aditya Rawat, Yash Rawat', v_t1_email, 'Room ' || 162, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Aditya Rawat',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'HR',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D (Management)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Aditya Rawat',
+      qualification = 'Ph.D (Management)',
+      course = 'MBA',
+      department = 'HR',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Yash Rawat',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'HR',
+        'position', 'Assistant Professor',
+        'qualification', 'Ph.D (Management)',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Yash Rawat',
+      qualification = 'Ph.D (Management)',
+      course = 'MBA',
+      department = 'HR',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 63: MBA International Business 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'MBA'
+    AND branch = 'International Business'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'MBA'
+      AND branch = 'International Business'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'MBA International Business - 2nd Year - Section A';
+  v_class_id   := 'class_63_mba_internationalbusiness_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'MBA', 'International Business', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Ruchi Srivastava, Rahul Rawat', v_t1_email, 'Room ' || 163, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Ruchi Srivastava',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'International Business',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Com, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Ruchi Srivastava',
+      qualification = 'M.Com, Ph.D',
+      course = 'MBA',
+      department = 'International Business',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Rahul Rawat',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'International Business',
+        'position', 'Assistant Professor',
+        'qualification', 'MBA, UGC-NET',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Rahul Rawat',
+      qualification = 'MBA, UGC-NET',
+      course = 'MBA',
+      department = 'International Business',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+  -- Class 64: MBA Business Analytics 2nd Year
+  SELECT roll_no INTO v_first_roll
+  FROM public.students
+  WHERE college_id = v_college_id
+    AND course = 'MBA'
+    AND branch = 'Business Analytics'
+    AND year = '2nd Year'
+    AND (roll_no ~* '^(BT|DP|MB)')
+  ORDER BY roll_no ASC
+  LIMIT 1;
+
+  IF v_first_roll IS NULL THEN
+    SELECT roll_no INTO v_first_roll
+    FROM public.students
+    WHERE college_id = v_college_id
+      AND course = 'MBA'
+      AND branch = 'Business Analytics'
+      AND year = '2nd Year'
+    ORDER BY roll_no ASC
+    LIMIT 1;
+  END IF;
+
+  v_first_roll := lower(trim(v_first_roll));
+  v_t1_email := 'teacher07' || v_first_roll || '01@gmail.com';
+  v_t1_pass  := '07' || v_first_roll || '01';
+  v_t2_email := 'teacher07' || v_first_roll || '02@gmail.com';
+  v_t2_pass  := '07' || v_first_roll || '02';
+  v_class_name := 'MBA Business Analytics - 2nd Year - Section A';
+  v_class_id   := 'class_64_mba_businessanalytics_2ndyear';
+
+  -- Upsert Class
+  INSERT INTO public.classes (
+    id, college_id, course, branch, year, semester, section, name, teacher_name, teacher_id, room_no, capacity, created_at
+  ) VALUES (
+    v_class_id, v_college_id, 'MBA', 'Business Analytics', '2nd Year', 'Semester 3', 'Section A', v_class_name, 'Ruchi Rawat, Divya Nigam', v_t1_email, 'Room ' || 164, 60, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    college_id = EXCLUDED.college_id,
+    course = EXCLUDED.course,
+    branch = EXCLUDED.branch,
+    year = EXCLUDED.year,
+    semester = EXCLUDED.semester,
+    section = EXCLUDED.section,
+    name = EXCLUDED.name,
+    teacher_name = EXCLUDED.teacher_name,
+    teacher_id = EXCLUDED.teacher_id;
+
+  -- Create Teacher 1
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t1_email) THEN
+    PERFORM public.create_app_user(
+      v_t1_email,
+      v_t1_pass,
+      'teacher',
+      v_college_id,
+      'Ruchi Rawat',
+      '',
+      'TCH-' || upper(replace(v_t1_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'Business Analytics',
+        'position', 'Assistant Professor',
+        'qualification', 'MBA, Ph.D',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Ruchi Rawat',
+      qualification = 'MBA, Ph.D',
+      course = 'MBA',
+      department = 'Business Analytics',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t1_email;
+  END IF;
+
+  -- Create Teacher 2
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = v_t2_email) THEN
+    PERFORM public.create_app_user(
+      v_t2_email,
+      v_t2_pass,
+      'teacher',
+      v_college_id,
+      'Divya Nigam',
+      '',
+      'TCH-' || upper(replace(v_t2_email, '@gmail.com', '')),
+      NULL, NULL, NULL,
+      jsonb_build_object(
+        'course', 'MBA',
+        'department', 'Business Analytics',
+        'position', 'Assistant Professor',
+        'qualification', 'M.Com, MBA',
+        'assigned_classes', jsonb_build_array(v_class_name)
+      )
+    );
+  ELSE
+    UPDATE public.teachers SET
+      name = 'Divya Nigam',
+      qualification = 'M.Com, MBA',
+      course = 'MBA',
+      department = 'Business Analytics',
+      assigned_classes = jsonb_build_array(v_class_name)
+    WHERE lower(email) = v_t2_email;
+  END IF;
+
+
+END $$;
