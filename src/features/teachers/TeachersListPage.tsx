@@ -213,12 +213,29 @@ export function TeachersListPage() {
     return branchesByCourse[formData.course] || []
   }, [formData.course, branchesByCourse])
 
-  // Available Subjects for Modal (Dynamic based on selected Course & Department / Classes)
+  // Available Subjects for Modal (Dynamic based on selected Course & Department)
   const availableSubjectsForModal = useMemo(() => {
     const deptNorm = (formData.department || '').toLowerCase().replace(/[^a-z0-9]/g, '')
+    const isTnp = isBranchMatch('TNP', formData.department) || (formData.department || '').toUpperCase() === 'TNP' || (formData.department || '').toLowerCase().includes('training and placement')
+
+    if (isTnp) {
+      // If selected branch is TNP, show ONLY TNP subjects (PDP, Aptitude, Technical Training) for the selected course
+      return subjects.filter((s) => {
+        if (formData.course && s.course_name && s.course_name.toLowerCase() !== formData.course.toLowerCase()) return false
+        const isSubTnp = s.branch_name === 'TNP' || (s.applicable_branches && s.applicable_branches.includes('TNP')) || s.branch_name === 'Training and Placement Department' || s.subject_type === 'TNP' || ['pdp', 'aptitude', 'technical training'].includes((s.name || '').toLowerCase())
+        return isSubTnp
+      })
+    }
+
     const courseSubjects = subjects.filter((s) => {
+      const isSubTnp = s.branch_name === 'TNP' || (s.applicable_branches && s.applicable_branches.includes('TNP')) || s.branch_name === 'Training and Placement Department' || s.subject_type === 'TNP'
+      if (isSubTnp) return false // Do NOT show TNP subjects under normal academic branches
+
       if (formData.course && s.course_name && s.course_name.toLowerCase() !== formData.course.toLowerCase()) return false
       if (formData.department && s.branch_name) {
+        const isSubCommon = Boolean(s.is_common || s.branch_name.toLowerCase().includes('common'))
+        if (isSubCommon) return true
+
         const subBranch = s.branch_name.toLowerCase().replace(/[^a-z0-9]/g, '')
         if (subBranch !== deptNorm && !s.branch_name.toLowerCase().includes(formData.department.toLowerCase()) && !formData.department.toLowerCase().includes(s.branch_name.toLowerCase())) {
           return false
@@ -227,22 +244,12 @@ export function TeachersListPage() {
       return true
     })
 
-    // Also include subjects matching assigned classes
-    const classSubjects = subjects.filter((s) => {
-      return formData.assigned_classes.some((ac) => {
-        const norm = ac.toLowerCase()
-        return norm.includes((s.course_name || '').toLowerCase()) &&
-          (norm.includes((s.branch_name || '').toLowerCase()) || norm.includes(deptNorm))
-      })
-    })
-
-    const combined = [...courseSubjects, ...classSubjects]
     const uniqueMap = new Map<string, typeof subjects[0]>()
-    combined.forEach((s) => {
+    courseSubjects.forEach((s) => {
       uniqueMap.set(`${s.name} (${s.code})`, s)
     })
     return Array.from(uniqueMap.values())
-  }, [formData.course, formData.department, formData.assigned_classes, subjects])
+  }, [formData.course, formData.department, subjects])
 
   const openAddModal = () => {
     setEditingTeacher(null)
@@ -590,7 +597,7 @@ export function TeachersListPage() {
               setCourseFilter(e.target.value)
               setBranchFilter('') // reset branch when course changes
             }}
-            className="w-44"
+            className="w-full sm:w-44"
           />
           {/* 2. All Branches Filter */}
           <Select
@@ -598,7 +605,7 @@ export function TeachersListPage() {
             placeholder="All Branches"
             value={branchFilter}
             onChange={(e) => setBranchFilter(e.target.value)}
-            className="w-48"
+            className="w-full sm:w-48"
           />
         </div>
         {(search || courseFilter || branchFilter) && (
@@ -665,6 +672,7 @@ export function TeachersListPage() {
                     ...formData,
                     course: newCourse,
                     department: newBranches[0] || '',
+                    assigned_subjects: [],
                   })
                 }}
               />
@@ -673,7 +681,13 @@ export function TeachersListPage() {
               <Select
                 options={availableBranchesForModal.map((b) => ({ value: b, label: b }))}
                 value={formData.department}
-                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    department: e.target.value,
+                    assigned_subjects: [],
+                  })
+                }
               />
             </FormField>
             <FormField label="Full Name" required>

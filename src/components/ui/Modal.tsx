@@ -83,7 +83,7 @@ export function Modal({ isOpen, onClose, title, subtitle, children, footer, size
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === overlayRef.current) onClose()
       }}
@@ -93,19 +93,19 @@ export function Modal({ isOpen, onClose, title, subtitle, children, footer, size
     >
       <div
         ref={contentRef}
-        className={`w-full ${sizeClasses[size]} bg-surface border border-border rounded-[var(--radius-modal)] shadow-2xl flex flex-col max-h-[90vh]`}
+        className={`w-full ${sizeClasses[size]} bg-surface border border-border rounded-[var(--radius-modal)] shadow-2xl flex flex-col max-h-[92vh]`}
       >
         {/* Header */}
-        <div className="flex items-start justify-between p-6 pb-4 border-b border-border">
+        <div className="flex items-start justify-between p-4 sm:p-6 pb-3 sm:pb-4 border-b border-border">
           <div>
-            <h2 id="modal-title" className="text-xl font-display font-bold text-ink-900">
+            <h2 id="modal-title" className="text-lg sm:text-xl font-display font-bold text-ink-900">
               {title}
             </h2>
-            {subtitle && <p className="text-sm text-ink-400 mt-1">{subtitle}</p>}
+            {subtitle && <p className="text-xs sm:text-sm text-ink-400 mt-1">{subtitle}</p>}
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-[var(--radius-btn)] hover:bg-canvas transition-colors text-ink-400 hover:text-ink-900 cursor-pointer"
+            className="p-1.5 rounded-[var(--radius-btn)] hover:bg-canvas transition-colors text-ink-400 hover:text-ink-900 cursor-pointer shrink-0"
             aria-label="Close modal"
           >
             <X className="h-5 w-5" />
@@ -113,11 +113,11 @@ export function Modal({ isOpen, onClose, title, subtitle, children, footer, size
         </div>
 
         {/* Body */}
-        <div className="p-6 overflow-y-auto flex-1">{children}</div>
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1">{children}</div>
 
         {/* Footer */}
         {footer && (
-          <div className="px-6 py-4 border-t border-border flex items-center justify-end gap-3 bg-canvas/50 rounded-b-[var(--radius-modal)]">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-border flex flex-wrap items-center justify-end gap-2 sm:gap-3 bg-canvas/50 rounded-b-[var(--radius-modal)]">
             {footer}
           </div>
         )}

@@ -518,7 +518,7 @@ export function StudentsListPage() {
               setCourseFilter(e.target.value)
               setBranchFilter('') // Reset branch when course changes
             }}
-            className="w-40"
+            className="w-full sm:w-40"
           />
           {/* 2. All Branches Filter */}
           <Select
@@ -526,7 +526,7 @@ export function StudentsListPage() {
             placeholder="All Branches"
             value={branchFilter}
             onChange={(e) => setBranchFilter(e.target.value)}
-            className="w-44"
+            className="w-full sm:w-44"
           />
           {/* 3. All Year Filter */}
           <Select
@@ -534,7 +534,7 @@ export function StudentsListPage() {
             placeholder="All Year"
             value={yearFilter}
             onChange={(e) => setYearFilter(e.target.value)}
-            className="w-36"
+            className="w-full sm:w-36"
           />
         </div>
         {(search || courseFilter || branchFilter || yearFilter) && (

@@ -357,7 +357,7 @@ export function ClassesListPage() {
               setCourseFilter(e.target.value)
               setBranchFilter('') // reset branch when course changes
             }}
-            className="w-44"
+            className="w-full sm:w-44"
           />
           {/* 2. All Branches Filter */}
           <Select
@@ -365,7 +365,7 @@ export function ClassesListPage() {
             placeholder="All Branches"
             value={branchFilter}
             onChange={(e) => setBranchFilter(e.target.value)}
-            className="w-48"
+            className="w-full sm:w-48"
           />
         </div>
         {(search || courseFilter || branchFilter) && (

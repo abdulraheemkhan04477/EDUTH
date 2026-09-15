@@ -78,7 +78,7 @@ export function AdminTnpPage() {
   const { toast } = useToast()
   const { user } = useAuth()
   const userCollege = user?.college_id || user?.school_id
-  const { students, teachers, classes, addTeacher, deleteTeacher } = useAcademicStore()
+  const { students, teachers, classes, subjects, addTeacher, deleteTeacher } = useAcademicStore()
   const {
     companies,
     drives,
@@ -137,7 +137,7 @@ export function AdminTnpPage() {
 
   // Filtered TNP Teachers
   const tnpTeachers = useMemo(() => {
-    return teachers.filter((t) => (t.department || '').toUpperCase() === 'TNP')
+    return teachers.filter((t) => (t.department || '').toUpperCase() === 'TNP' || isBranchMatch('TNP', t.department))
   }, [teachers])
 
   // Modals state
@@ -188,6 +188,27 @@ export function AdminTnpPage() {
     })
     return fallbackList
   }, [classes, teacherCourse])
+
+  const availableTnpSubjects = useMemo(() => {
+    const filtered = subjects.filter((s) => {
+      if (teacherCourse && s.course_name && s.course_name.toLowerCase() !== teacherCourse.toLowerCase()) return false
+      const isSubTnp =
+        s.branch_name === 'TNP' ||
+        (s.applicable_branches && s.applicable_branches.includes('TNP')) ||
+        s.branch_name === 'Training and Placement Department' ||
+        s.subject_type === 'TNP' ||
+        ['pdp', 'aptitude', 'technical training'].includes((s.name || '').toLowerCase())
+      return isSubTnp
+    })
+
+    if (filtered.length > 0) return filtered
+
+    return [
+      { id: 'pdp', name: 'PDP', code: 'PDP', course_name: teacherCourse, branch_name: 'TNP', status: 'active' },
+      { id: 'apt', name: 'Aptitude', code: 'APT', course_name: teacherCourse, branch_name: 'TNP', status: 'active' },
+      { id: 'tt', name: 'Technical Training', code: 'TECH_TRG', course_name: teacherCourse, branch_name: 'TNP', status: 'active' },
+    ]
+  }, [subjects, teacherCourse])
 
   const toggleTeacherClass = (classLabel: string) => {
     setTeacherSelectedClasses((prev) => {
@@ -662,7 +683,16 @@ export function AdminTnpPage() {
         </div>
         <div className="flex items-center gap-2">
           {activeTab === 'staff' && (
-            <Button variant="primary" onClick={() => openTeacherModal()}>
+            <Button
+              variant="primary"
+              onClick={() =>
+                toast({
+                  type: 'info',
+                  title: 'Add Teacher via Faculty Management',
+                  description: 'To add a TNP Teacher, go to Faculty Management and select Department: TNP.',
+                })
+              }
+            >
               <Plus className="h-4 w-4 mr-2" /> Add TNP Teacher
             </Button>
           )}
@@ -886,7 +916,16 @@ export function AdminTnpPage() {
                 <h3 className="font-bold text-ink-900 text-base">Dedicated TNP Staff & Trainers</h3>
                 <p className="text-xs text-ink-500">Only faculty assigned strictly to Department: TNP appear in this system.</p>
               </div>
-              <Button variant="primary" onClick={() => openTeacherModal()}>
+              <Button
+                variant="primary"
+                onClick={() =>
+                  toast({
+                    type: 'info',
+                    title: 'Add Teacher via Faculty Management',
+                    description: 'To add a TNP Teacher, go to Faculty Management and select Department: TNP.',
+                  })
+                }
+              >
                 <Plus className="h-4 w-4 mr-2" /> Add TNP Teacher
               </Button>
             </div>
@@ -1385,7 +1424,6 @@ export function AdminTnpPage() {
                 onChange={(e) => {
                   const newCourse = e.target.value
                   setTeacherCourse(newCourse)
-                  // Filter selected classes to only those belonging to the newly selected course
                   setTeacherSelectedClasses((prev) => prev.filter((cStr) => cStr.startsWith(newCourse)))
                 }}
                 options={COURSES.map((c) => ({ label: c, value: c }))}
@@ -1400,7 +1438,7 @@ export function AdminTnpPage() {
               <Select
                 value={teacherSpecialization}
                 onChange={(e) => setTeacherSpecialization(e.target.value as any)}
-                options={TNP_SPECIALIZATIONS.map((s) => ({ label: s, value: s }))}
+                options={availableTnpSubjects.map((s) => ({ label: `${s.name} (${s.code})`, value: s.name }))}
               />
             </FormField>
           </div>

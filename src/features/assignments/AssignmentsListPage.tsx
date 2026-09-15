@@ -121,7 +121,7 @@ export function AssignmentsListPage() {
   const [search, setSearch] = useState('')
   const [selectedCourse, setSelectedCourse] = useState<string>('All')
   const [selectedBranch, setSelectedBranch] = useState<string>('All')
-  const [selectedSemester, setSelectedSemester] = useState<string>('All')
+  const [selectedYear, setSelectedYear] = useState<string>('All')
 
   // Modals state
   const [showAddEditModal, setShowAddEditModal] = useState(false)
@@ -228,8 +228,17 @@ export function AssignmentsListPage() {
     if (selectedBranch !== 'All') {
       list = list.filter((a) => isBranchMatch(a.branch, selectedBranch) || (selectedBranch === 'Common Subject' && a.is_common_subject))
     }
-    if (selectedSemester !== 'All') {
-      list = list.filter((a) => a.semester === selectedSemester)
+    if (selectedYear !== 'All') {
+      list = list.filter((a) => {
+        if (a.year && a.year !== 'all') {
+          return a.year.toLowerCase() === selectedYear.toLowerCase()
+        }
+        if (selectedYear === '1st Year') return ['Semester 1', 'Semester 2'].includes(a.semester)
+        if (selectedYear === '2nd Year') return ['Semester 3', 'Semester 4'].includes(a.semester)
+        if (selectedYear === '3rd Year') return ['Semester 5', 'Semester 6'].includes(a.semester)
+        if (selectedYear === '4th Year') return ['Semester 7', 'Semester 8'].includes(a.semester)
+        return true
+      })
     }
 
     // 3. Search query
@@ -260,7 +269,7 @@ export function AssignmentsListPage() {
     teacherName,
     selectedCourse,
     selectedBranch,
-    selectedSemester,
+    selectedYear,
     search,
     getStudentAssignments,
     getTeacherAssignments,
@@ -516,7 +525,7 @@ export function AssignmentsListPage() {
         />
       </div>
 
-      {/* Modern Search & Filter Bar (Matching Classes, Fees, Teachers UI) */}
+      {/* Search & Filter Bar ([ All Course ] [ All Branch ] [ All Year ]) */}
       <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 shadow-[var(--shadow-soft)] flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
           <SearchInput
@@ -533,7 +542,7 @@ export function AssignmentsListPage() {
               setSelectedBranch('All')
             }}
             options={[
-              { value: 'All', label: 'All Courses' },
+              { value: 'All', label: 'All Course' },
               ...courses.map((c) => ({ value: c, label: c })),
             ]}
             className="w-44"
@@ -543,8 +552,8 @@ export function AssignmentsListPage() {
             value={selectedBranch}
             onChange={(e) => setSelectedBranch(e.target.value)}
             options={[
-              { value: 'All', label: 'All Branches' },
-              { value: 'Common Subject', label: 'Common Subjects' },
+              { value: 'All', label: 'All Branch' },
+              { value: 'Common Subject', label: 'Common Subject' },
               ...((selectedCourse !== 'All' ? branchesByCourse[selectedCourse] : []) || []).map((b) => ({
                 value: b,
                 label: b,
@@ -554,24 +563,20 @@ export function AssignmentsListPage() {
           />
 
           <Select
-            value={selectedSemester}
-            onChange={(e) => setSelectedSemester(e.target.value)}
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
             options={[
-              { value: 'All', label: 'All Semesters / Years' },
-              { value: 'Semester 1', label: 'Semester 1 (1st Year)' },
-              { value: 'Semester 2', label: 'Semester 2 (1st Year)' },
-              { value: 'Semester 3', label: 'Semester 3 (2nd Year)' },
-              { value: 'Semester 4', label: 'Semester 4 (2nd Year)' },
-              { value: 'Semester 5', label: 'Semester 5 (3rd Year)' },
-              { value: 'Semester 6', label: 'Semester 6 (3rd Year)' },
-              { value: 'Semester 7', label: 'Semester 7 (4th Year)' },
-              { value: 'Semester 8', label: 'Semester 8 (4th Year)' },
+              { value: 'All', label: 'All Year' },
+              { value: '1st Year', label: '1st Year' },
+              { value: '2nd Year', label: '2nd Year' },
+              { value: '3rd Year', label: '3rd Year' },
+              { value: '4th Year', label: '4th Year' },
             ]}
-            className="w-52"
+            className="w-44"
           />
         </div>
 
-        {(search || selectedCourse !== 'All' || selectedBranch !== 'All' || selectedSemester !== 'All') && (
+        {(search || selectedCourse !== 'All' || selectedBranch !== 'All' || selectedYear !== 'All') && (
           <Button
             variant="ghost"
             size="sm"
@@ -579,7 +584,7 @@ export function AssignmentsListPage() {
               setSearch('')
               setSelectedCourse('All')
               setSelectedBranch('All')
-              setSelectedSemester('All')
+              setSelectedYear('All')
             }}
           >
             Clear Filters
@@ -604,24 +609,23 @@ export function AssignmentsListPage() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {visibleAssignments.map((hw) => {
             const submissionPercentage = hw.total_students > 0 ? Math.round((hw.submitted_count / hw.total_students) * 100) : 0
             return (
               <div
                 key={hw.id}
-                className="bg-surface rounded-2xl shadow-[var(--shadow-soft)] hover:shadow-lg border border-border hover:border-brand-500/40 p-6 flex flex-col justify-between transition-all duration-200 group"
+                className="bg-surface rounded-[var(--radius-card)] border border-border p-5 shadow-[var(--shadow-soft)] hover:shadow-md transition-all duration-200 flex flex-col justify-between group"
               >
-                <div className="space-y-3.5">
-                  {/* Top Badges & Status */}
+                <div className="space-y-2.5">
+                  {/* Status & Subject badges */}
                   <div className="flex items-center justify-between gap-2">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="px-3 py-1 rounded-xl text-xs font-bold bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border border-brand-200/60 dark:border-brand-800/60 flex items-center gap-1.5">
-                        <Sparkles className="h-3.5 w-3.5 text-brand-500" />
+                    <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                      <span className="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300 border border-brand-200/60 dark:border-brand-800/60 truncate">
                         {hw.subject}
                       </span>
                       {hw.is_common_subject && (
-                        <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
+                        <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
                           Common
                         </span>
                       )}
@@ -629,81 +633,78 @@ export function AssignmentsListPage() {
                     <StatusPill {...(statusMap[hw.status] || statusMap.active)} />
                   </div>
 
-                  {/* Heading Title (CLEAR, SPACIOUS & PROMINENT) */}
-                  <h3 className="text-lg sm:text-xl font-bold font-display text-ink-900 group-hover:text-brand-600 transition-colors leading-snug line-clamp-2">
+                  {/* 1. Title */}
+                  <h3 className="text-base font-semibold text-ink-900 group-hover:text-brand-600 transition-colors leading-snug line-clamp-1">
                     {hw.title}
                   </h3>
 
-                  {/* Academic Context Badge */}
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-canvas border border-border text-xs sm:text-sm font-semibold text-ink-600">
-                    <GraduationCap className="h-4 w-4 text-brand-600 shrink-0" />
+                  {/* 2. Subject / Class Information */}
+                  <div className="text-xs text-ink-500 font-medium flex items-center gap-1.5 flex-wrap">
+                    <GraduationCap className="h-3.5 w-3.5 text-ink-400 shrink-0" />
                     <span>{hw.course} • {hw.branch} • {hw.semester} {hw.section ? `(${hw.section})` : ''}</span>
                   </div>
 
-                  {/* Description Instructions */}
-                  <p className="text-xs sm:text-sm text-ink-600 font-normal leading-relaxed line-clamp-3 bg-canvas/60 p-3 rounded-xl border border-border/60">
-                    {hw.description || 'No specific description provided by faculty.'}
+                  {/* 3. Short description / preview */}
+                  <p className="text-xs text-ink-600 line-clamp-2 leading-relaxed bg-canvas/40 p-2.5 rounded-lg border border-border/50">
+                    {hw.description || 'No specific description provided.'}
                   </p>
                 </div>
 
-                {/* Card Footer Info & Actions */}
-                <div className="pt-4 mt-4 border-t border-border space-y-4">
+                {/* 4. Due date / status / metadata & 5. Actions */}
+                <div className="pt-3 mt-3 border-t border-border/60 space-y-3">
                   {/* Due Date & Faculty Name */}
-                  <div className="flex items-center justify-between text-xs sm:text-sm">
-                    <span className="flex items-center gap-1.5 text-ink-600 font-medium">
-                      <Calendar className="h-4 w-4 text-brand-600 shrink-0" />
-                      Due: <strong className="text-ink-900 font-bold">{hw.due_date}</strong>
+                  <div className="flex items-center justify-between text-xs text-ink-500">
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Calendar className="h-3.5 w-3.5 text-brand-600 shrink-0" />
+                      Due: <strong className="text-ink-900 font-semibold">{hw.due_date}</strong>
                     </span>
-                    <span className="text-ink-400 font-medium flex items-center gap-1">
+                    <span className="text-ink-400 font-medium flex items-center gap-1 truncate max-w-[120px]">
                       <User className="h-3.5 w-3.5 text-ink-400 shrink-0" />
                       {hw.teacher_name}
                     </span>
                   </div>
 
-                  {/* Attachment Link if available */}
+                  {/* Attachment if present */}
                   {hw.attachment_url && (
                     <a
                       href={hw.attachment_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2.5 p-2.5 rounded-xl bg-brand-50/70 hover:bg-brand-100/70 dark:bg-brand-950/50 dark:hover:bg-brand-900/50 border border-brand-200/60 dark:border-brand-800/60 text-xs sm:text-sm text-brand-700 dark:text-brand-300 font-semibold transition-colors"
+                      className="flex items-center gap-2 p-2 rounded-lg bg-brand-50/60 hover:bg-brand-100/60 dark:bg-brand-950/40 border border-brand-200/50 text-xs text-brand-700 dark:text-brand-300 font-medium transition-colors"
                     >
-                      <Paperclip className="h-4 w-4 text-brand-600 shrink-0" />
-                      <span className="truncate flex-1">{hw.attachment_name || 'View Attachment Document'}</span>
-                      <ExternalLink className="h-3.5 w-3.5 text-brand-500 shrink-0" />
+                      <Paperclip className="h-3.5 w-3.5 text-brand-600 shrink-0" />
+                      <span className="truncate flex-1">{hw.attachment_name || 'View Attachment'}</span>
+                      <ExternalLink className="h-3 w-3 text-brand-500 shrink-0" />
                     </a>
                   )}
 
-                  {/* Submissions Count & Progress Bar */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs sm:text-sm font-semibold">
-                      <span className="text-ink-400 flex items-center gap-1.5">
-                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                        Submissions
-                      </span>
-                      <span className="font-mono text-ink-900 font-bold">
+                  {/* Submissions Bar */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-[11px] font-medium text-ink-500">
+                      <span>Submissions</span>
+                      <span className="font-mono text-ink-900 font-semibold">
                         {hw.submitted_count} / {hw.total_students} ({submissionPercentage}%)
                       </span>
                     </div>
-                    <div className="h-2.5 bg-canvas rounded-full overflow-hidden border border-border">
+                    <div className="h-1.5 bg-canvas rounded-full overflow-hidden border border-border/50">
                       <div
-                        className="h-full bg-gradient-to-r from-brand-500 to-indigo-600 rounded-full transition-all duration-300"
+                        className="h-full bg-brand-600 rounded-full transition-all duration-300"
                         style={{ width: `${submissionPercentage}%` }}
                       />
                     </div>
                   </div>
 
-                  {/* Card Action Buttons */}
-                  <div className="flex items-center justify-end gap-2 pt-1">
+                  {/* Actions */}
+                  <div className="flex items-center justify-end gap-1.5 pt-1">
                     <button
                       type="button"
                       onClick={() => {
                         setViewingAssignment(hw)
                         setShowViewModal(true)
                       }}
-                      className="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold text-ink-600 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/60 transition-colors flex items-center gap-1.5 cursor-pointer border border-border/60 hover:border-brand-200"
+                      className="px-2.5 py-1 rounded-lg text-xs font-semibold text-ink-600 hover:text-brand-600 hover:bg-canvas transition-colors flex items-center gap-1 border border-border/60"
                     >
-                      <Eye className="h-4 w-4 text-ink-400 group-hover:text-brand-600" />
+                      <Eye className="h-3.5 w-3.5" />
                       View
                     </button>
                     {role !== 'student' && (
@@ -711,10 +712,10 @@ export function AssignmentsListPage() {
                         <button
                           type="button"
                           onClick={() => handleOpenEditModal(hw)}
-                          className="p-2 rounded-xl text-ink-600 hover:text-brand-600 hover:bg-canvas transition-colors cursor-pointer border border-border/60"
+                          className="p-1.5 rounded-lg text-ink-600 hover:text-brand-600 hover:bg-canvas transition-colors border border-border/60"
                           title="Edit Assignment"
                         >
-                          <Pencil className="h-4 w-4" />
+                          <Pencil className="h-3.5 w-3.5" />
                         </button>
                         <button
                           type="button"
@@ -722,10 +723,10 @@ export function AssignmentsListPage() {
                             setDeletingAssignmentId(hw.id)
                             setShowDeleteModal(true)
                           }}
-                          className="p-2 rounded-xl text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 transition-colors cursor-pointer border border-border/60 hover:border-rose-200"
+                          className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 transition-colors border border-border/60 hover:border-rose-200"
                           title="Delete Assignment"
                         >
-                          <Trash2 className="h-4 w-4 text-rose-500" />
+                          <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </>
                     )}

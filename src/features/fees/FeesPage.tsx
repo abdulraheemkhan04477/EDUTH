@@ -1132,14 +1132,14 @@ export function FeesPage() {
                   setCourseFilter(e.target.value || 'All')
                   setBranchFilter('All')
                 }}
-                className="w-40"
+                className="w-full sm:w-40"
               />
               <Select
                 options={availableBranchesForCourse.map((b: string) => ({ value: b, label: b }))}
                 placeholder="All Branches"
                 value={branchFilter === 'All' ? '' : branchFilter}
                 onChange={(e) => setBranchFilter(e.target.value || 'All')}
-                className="w-44"
+                className="w-full sm:w-44"
               />
               <Select
                 options={[
@@ -1151,7 +1151,7 @@ export function FeesPage() {
                 placeholder="All Year"
                 value={yearFilter === 'All' ? '' : yearFilter}
                 onChange={(e) => setYearFilter(e.target.value || 'All')}
-                className="w-36"
+                className="w-full sm:w-36"
               />
             </div>
             {(search || courseFilter !== 'All' || branchFilter !== 'All' || yearFilter !== 'All') && (

@@ -733,12 +733,38 @@ export class AuthService {
   static async createTeacherAccount(teacherData: any): Promise<{ user?: Profile; error?: string }> {
     const normCollegeId = normalizeCollegeId(teacherData.college_id) || teacherData.college_id || 'ea318ebf-893e-410c-a925-ac1d4dc986eb'
     const cleanEmail = (teacherData.email || '').trim().toLowerCase()
-    const newId = teacherData.id || `t_${Date.now()}`
+    let assignedId = teacherData.id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `t_${Date.now()}`)
 
     if (isSupabaseConfigured && cleanEmail) {
+      if (teacherData.password) {
+        try {
+          const { data: authData, error: authErr } = await supabase.auth.signUp({
+            email: cleanEmail,
+            password: teacherData.password,
+            options: {
+              data: {
+                name: teacherData.name,
+                role: 'teacher',
+                college_id: normCollegeId,
+                teacher_id: teacherData.teacher_id,
+              },
+            },
+          })
+          if (authErr && !authErr.message.includes('User already registered')) {
+            console.warn('Supabase Auth signUp notice:', authErr.message)
+          }
+          if (authData?.user?.id) {
+            assignedId = authData.user.id
+            teacherData.id = authData.user.id
+          }
+        } catch (err) {
+          console.warn('Supabase Auth signUp exception:', err)
+        }
+      }
+
       try {
         await supabase.from('profiles').upsert([{
-          id: newId,
+          id: assignedId,
           college_id: normCollegeId,
           school_id: normCollegeId,
           role: 'teacher',
@@ -756,7 +782,7 @@ export class AuthService {
 
     return {
       user: {
-        id: newId,
+        id: assignedId,
         college_id: normCollegeId,
         school_id: normCollegeId,
         role: 'teacher',

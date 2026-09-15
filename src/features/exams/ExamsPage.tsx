@@ -872,7 +872,7 @@ export function ExamsPage() {
               setFilterSemester(sList[0] || 'Semester 1')
               setSelectedSubjectId('')
             }}
-            className="w-40 text-sm font-medium"
+            className="w-full sm:w-40 text-sm font-medium"
           />
 
           {/* Branch Selector */}
@@ -883,7 +883,7 @@ export function ExamsPage() {
               setFilterBranch(e.target.value)
               setSelectedSubjectId('')
             }}
-            className="w-44 text-sm font-medium"
+            className="w-full sm:w-44 text-sm font-medium"
           />
 
           {/* Year Selector */}
@@ -897,7 +897,7 @@ export function ExamsPage() {
               setFilterSemester(sList[0] || 'Semester 1')
               setSelectedSubjectId('')
             }}
-            className="w-36 text-sm font-medium"
+            className="w-full sm:w-36 text-sm font-medium"
           />
 
           {/* Exam Dropdown scoped to selected class */}
@@ -908,7 +908,7 @@ export function ExamsPage() {
             ]}
             value={filterExamId}
             onChange={(e) => setFilterExamId(e.target.value)}
-            className="w-52 text-sm font-semibold border-brand-500 bg-brand-50/40 text-brand-900"
+            className="w-full sm:w-52 text-sm font-semibold border-brand-500 bg-brand-50/40 text-brand-900"
           />
 
           {options?.showSubjectSelect && (
@@ -922,7 +922,7 @@ export function ExamsPage() {
               ]}
               value={selectedSubjectId}
               onChange={(e) => setSelectedSubjectId(e.target.value)}
-              className={`w-48 text-sm ${selectedSubjectId ? 'border-brand-500 font-bold text-brand-900 bg-brand-50/50' : 'border-amber-400 bg-amber-50/30'}`}
+              className={`w-full sm:w-48 text-sm ${selectedSubjectId ? 'border-brand-500 font-bold text-brand-900 bg-brand-50/50' : 'border-amber-400 bg-amber-50/30'}`}
             />
           )}
 
@@ -934,7 +934,7 @@ export function ExamsPage() {
               ]}
               value={filterStudentId}
               onChange={(e) => setFilterStudentId(e.target.value)}
-              className="w-48 text-sm"
+              className="w-full sm:w-48 text-sm"
             />
           )}
         </div>

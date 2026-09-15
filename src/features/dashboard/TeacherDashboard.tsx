@@ -280,11 +280,11 @@ export function TeacherDashboard() {
           ) : (
             <div className="space-y-3">
               {todaysPeriods.map((period, i) => (
-                <div key={i} className="flex items-center gap-4 p-3 rounded-[var(--radius-btn)] border border-border hover:bg-canvas transition-colors">
-                  <div className="text-sm text-ink-400 font-medium w-44 shrink-0">{period.time}</div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-ink-900">{period.subject}</p>
-                    <p className="text-xs text-ink-400">{period.class_name}</p>
+                <div key={i} className="flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-4 p-3 rounded-[var(--radius-btn)] border border-border hover:bg-canvas transition-colors">
+                  <div className="text-xs sm:text-sm text-ink-400 font-medium sm:w-44 shrink-0 font-mono">{period.time}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-ink-900 truncate">{period.subject}</p>
+                    <p className="text-xs text-ink-400 truncate">{period.class_name}</p>
                   </div>
                 </div>
               ))}

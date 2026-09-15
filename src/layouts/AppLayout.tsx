@@ -250,11 +250,11 @@ export function AppLayout() {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Topbar */}
-        <header className="h-16 bg-surface border-b border-border flex items-center gap-4 px-4 lg:px-6 shrink-0">
+        <header className="h-16 bg-surface border-b border-border flex items-center gap-2 sm:gap-4 px-3 sm:px-4 lg:px-6 shrink-0">
           {/* Mobile menu button */}
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 rounded hover:bg-canvas text-ink-600 cursor-pointer"
+            className="lg:hidden p-2 rounded hover:bg-canvas text-ink-600 cursor-pointer shrink-0"
             aria-label="Open menu"
           >
             <Menu className="h-5 w-5" />
@@ -263,7 +263,7 @@ export function AppLayout() {
           {/* Collapse button (desktop) */}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="hidden lg:block p-2 rounded hover:bg-canvas text-ink-400 cursor-pointer"
+            className="hidden lg:block p-2 rounded hover:bg-canvas text-ink-400 cursor-pointer shrink-0"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             <Menu className="h-5 w-5" />
@@ -272,13 +272,13 @@ export function AppLayout() {
           {/* Search */}
           <SearchInput
             placeholder="Search across EduFlow..."
-            className="flex-1 max-w-md"
+            className="w-32 sm:w-auto flex-1 max-w-[180px] sm:max-w-md"
           />
 
           <div className="flex-1" />
 
           {/* Notification bell */}
-          <button className="relative p-2 rounded hover:bg-canvas text-ink-400 hover:text-ink-900 transition-colors cursor-pointer" aria-label="Notifications">
+          <button className="relative p-2 rounded hover:bg-canvas text-ink-400 hover:text-ink-900 transition-colors cursor-pointer shrink-0" aria-label="Notifications">
             <Bell className="h-5 w-5" />
             <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-danger-600 rounded-full" />
           </button>
@@ -286,7 +286,7 @@ export function AppLayout() {
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className="p-2 rounded hover:bg-canvas text-ink-400 hover:text-ink-900 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-600/20"
+            className="p-2 rounded hover:bg-canvas text-ink-400 hover:text-ink-900 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-600/20 shrink-0"
             aria-label={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           >
@@ -298,14 +298,14 @@ export function AppLayout() {
           </button>
 
           {/* User dropdown */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <AvatarInitials name={user?.name ?? 'User'} />
             <span className="hidden md:block text-sm font-medium text-ink-900">{user?.name}</span>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
           <Outlet />
         </main>
       </div>

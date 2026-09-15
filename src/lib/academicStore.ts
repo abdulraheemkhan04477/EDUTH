@@ -66,6 +66,8 @@ export const BRANCH_MAP: Record<string, string> = {
   'International Business': 'International Business',
   BA: 'Business Analytics',
   'Business Analytics': 'Business Analytics',
+  TNP: 'Training and Placement Department',
+  'Training and Placement Department': 'Training and Placement Department',
 }
 
 export const BRANCH_CODE_MAP: Record<string, string> = {
@@ -98,6 +100,8 @@ export const BRANCH_CODE_MAP: Record<string, string> = {
   'HR': 'HR',
   'IB': 'IB',
   'BA': 'BA',
+  'TNP': 'TNP',
+  'Training and Placement Department': 'TNP',
 }
 
 export function isBranchMatch(b1?: string | null, b2?: string | null): boolean {
@@ -138,6 +142,7 @@ export const BRANCHES_BY_COURSE: Record<string, string[]> = {
     'IT',
     'AI/ML',
     'Biotech',
+    'TNP',
   ],
   Diploma: [
     'Civil',
@@ -146,6 +151,7 @@ export const BRANCHES_BY_COURSE: Record<string, string[]> = {
     'ECE',
     'CSE',
     'IT',
+    'TNP',
   ],
   MBA: [
     'Finance',
@@ -153,6 +159,7 @@ export const BRANCHES_BY_COURSE: Record<string, string[]> = {
     'Human Resource Management',
     'International Business',
     'Business Analytics',
+    'TNP',
   ],
 }
 
@@ -392,6 +399,19 @@ export const initialSubjects: SubjectItem[] = [
   { id: 'sub_mba_hr_1', course_name: 'MBA', branch_name: 'HR', semester_name: 'Semester 1', name: 'Human Resource Management Fundamentals', code: 'MBA-HR101', type: 'Theory', credits: 4, status: 'active' },
   { id: 'sub_mba_hr_2', course_name: 'MBA', branch_name: 'HR', semester_name: 'Semester 2', name: 'Talent Acquisition & Development', code: 'MBA-HR201', type: 'Theory', credits: 4, status: 'active' },
   { id: 'sub_mba_hr_3', course_name: 'MBA', branch_name: 'HR', semester_name: 'Semester 3', name: 'Performance Management & Reward Systems', code: 'MBA-HR301', type: 'Theory', credits: 4, status: 'active' },
+
+  // TNP Subjects
+  { id: 'sub_tnp_pdp_btech', course_name: 'B.Tech', branch_name: 'TNP', semester_name: 'All Semesters', name: 'PDP', code: 'PDP', type: 'Theory', credits: 4, status: 'active', applicable_branches: ['TNP'] },
+  { id: 'sub_tnp_apt_btech', course_name: 'B.Tech', branch_name: 'TNP', semester_name: 'All Semesters', name: 'Aptitude', code: 'APT', type: 'Theory', credits: 4, status: 'active', applicable_branches: ['TNP'] },
+  { id: 'sub_tnp_tt_btech', course_name: 'B.Tech', branch_name: 'TNP', semester_name: 'All Semesters', name: 'Technical Training', code: 'TECH_TRG', type: 'Theory', credits: 4, status: 'active', applicable_branches: ['TNP'] },
+
+  { id: 'sub_tnp_pdp_dip', course_name: 'Diploma', branch_name: 'TNP', semester_name: 'All Semesters', name: 'PDP', code: 'PDP', type: 'Theory', credits: 4, status: 'active', applicable_branches: ['TNP'] },
+  { id: 'sub_tnp_apt_dip', course_name: 'Diploma', branch_name: 'TNP', semester_name: 'All Semesters', name: 'Aptitude', code: 'APT', type: 'Theory', credits: 4, status: 'active', applicable_branches: ['TNP'] },
+  { id: 'sub_tnp_tt_dip', course_name: 'Diploma', branch_name: 'TNP', semester_name: 'All Semesters', name: 'Technical Training', code: 'TECH_TRG', type: 'Theory', credits: 4, status: 'active', applicable_branches: ['TNP'] },
+
+  { id: 'sub_tnp_pdp_mba', course_name: 'MBA', branch_name: 'TNP', semester_name: 'All Semesters', name: 'PDP', code: 'PDP', type: 'Theory', credits: 4, status: 'active', applicable_branches: ['TNP'] },
+  { id: 'sub_tnp_apt_mba', course_name: 'MBA', branch_name: 'TNP', semester_name: 'All Semesters', name: 'Aptitude', code: 'APT', type: 'Theory', credits: 4, status: 'active', applicable_branches: ['TNP'] },
+  { id: 'sub_tnp_tt_mba', course_name: 'MBA', branch_name: 'TNP', semester_name: 'All Semesters', name: 'Technical Training', code: 'TECH_TRG', type: 'Theory', credits: 4, status: 'active', applicable_branches: ['TNP'] },
 ]
 
 // Empty initial state when Supabase is configured
@@ -1107,8 +1127,25 @@ export const academicStore = {
         if (c1 !== c2 && sub.course_name !== 'All' && !c1.includes(c2) && !c2.includes(c1)) return false
       }
 
+      // Check if branch is specifically TNP
+      const isTargetTnp = Boolean(branch && (branch.toUpperCase() === 'TNP' || isBranchMatch('TNP', branch)))
+      const isSubTnp = Boolean(
+        sub.branch_name === 'TNP' ||
+        sub.subject_type === 'TNP' ||
+        (sub.branch_name && sub.branch_name.toLowerCase().includes('training and placement')) ||
+        (sub.applicable_branches && sub.applicable_branches.includes('TNP'))
+      )
+
+      if (isTargetTnp) {
+        // When TNP branch is selected, return ONLY TNP subjects
+        return isSubTnp
+      } else if (isSubTnp) {
+        // TNP subjects should NOT show under non-TNP branches
+        return false
+      }
+
       // Flexible semester matching (e.g. 'Semester 1' vs '1st Semester')
-      if (semester && sub.semester_name) {
+      if (semester && sub.semester_name && sub.semester_name !== 'All Semesters') {
         const s1Num = sub.semester_name.replace(/[^0-9]/g, '')
         const s2Num = semester.replace(/[^0-9]/g, '')
         if (s1Num && s2Num) {
@@ -1740,12 +1777,22 @@ export function useAcademicStore() {
   const rawBranches = academicStore.getBranches()
   const scopedBranches = isSuperAdmin ? rawBranches : rawBranches.filter((b) => isCollegeMatch(b.college_id))
 
+  const dynamicBranchesByCourse: Record<string, string[]> = { ...BRANCHES_BY_COURSE }
+  COURSES.forEach((c) => {
+    const bList = scopedBranches
+      .filter((b) => b.course_name.toLowerCase() === c.toLowerCase())
+      .map((b) => b.code || b.name)
+    if (bList.length > 0) {
+      dynamicBranchesByCourse[c] = Array.from(new Set([...(BRANCHES_BY_COURSE[c] || []), ...bList]))
+    }
+  })
+
   const rawSections = academicStore.getSections()
   const scopedSections = isSuperAdmin ? rawSections : rawSections.filter((sec) => isCollegeMatch(sec.college_id))
 
   return {
     courses: COURSES,
-    branchesByCourse: BRANCHES_BY_COURSE,
+    branchesByCourse: dynamicBranchesByCourse,
     years: YEARS,
     teacherPositions: TEACHER_POSITIONS,
     classes: scopedClasses,
