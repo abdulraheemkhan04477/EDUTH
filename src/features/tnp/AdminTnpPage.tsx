@@ -45,7 +45,6 @@ import {
   Sparkles,
 } from 'lucide-react'
 
-const TNP_SPECIALIZATIONS = ['Aptitude', 'PDP', 'Technical Training'] as const
 const TNP_ACTIVITY_TYPES: { type: ActivityType; label: string }[] = [
   { type: 'seminar', label: 'Seminar' },
   { type: 'event', label: 'Event' },

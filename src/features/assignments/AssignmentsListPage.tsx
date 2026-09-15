@@ -35,7 +35,6 @@ import {
   GraduationCap,
   Paperclip,
   CheckCircle2,
-  Sparkles,
   Clock,
   AlertCircle,
 } from 'lucide-react'
