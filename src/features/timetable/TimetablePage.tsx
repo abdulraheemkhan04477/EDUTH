@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { Select, Button, Drawer, FormField, Input, Modal, EmptyState, StatCard } from '../../components/ui'
+import { Select, Button, Drawer, FormField, Input, Modal, EmptyState } from '../../components/ui'
 import {
   Plus, Pencil, Trash2, Printer, Settings,
   AlertTriangle, Calendar, Search, Clock, Users, Lock,
@@ -781,20 +781,22 @@ export function TimetablePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0 max-w-full">
       {/* ============================================================ */}
       {/* 1. TOP HEADER & CONTROLS TOOLBAR                             */}
       {/* ============================================================ */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 print:hidden">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-ink-900 tracking-tight flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 border border-brand-200/60 dark:border-brand-800/60 shadow-sm">
-              <Calendar className="h-6 w-6" />
+          <h1 className="text-xl sm:text-2xl font-display font-bold text-ink-900 tracking-tight flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 border border-brand-200/60 dark:border-brand-800/60 shadow-xs">
+              <Calendar className="h-5 w-5" />
             </div>
-            Academic Timetable
+            Class Timetable & Schedule
           </h1>
-          <p className="text-sm font-medium text-ink-400 mt-1.5">
-            Role-based dynamic class scheduling, multi-period merging, room allocations, and faculty assignments.
+          <p className="text-xs sm:text-sm font-medium text-ink-400 mt-1">
+            {isStudent
+              ? `Enrolled Class Roster: ${filterCourse} • ${filterBranch} • ${filterYear} (${filterSection})`
+              : `Managing ${filterCourse} — ${filterBranch} | ${filterYear} (${filterSection})`}
           </p>
         </div>
 
@@ -818,7 +820,7 @@ export function TimetablePage() {
               <Button
                 size="sm"
                 onClick={() => openAddEntryDrawer()}
-                className="bg-brand-600 hover:bg-brand-700 text-white font-bold gap-2 py-2 px-4 rounded-xl shadow-sm"
+                className="bg-brand-600 hover:bg-brand-700 text-white font-bold gap-2 py-2 px-4 rounded-xl shadow-xs"
               >
                 <Plus className="h-4 w-4" /> Add Lecture / Lab
               </Button>
@@ -830,7 +832,7 @@ export function TimetablePage() {
               <Button
                 size="sm"
                 onClick={() => openAddEntryDrawer()}
-                className="bg-brand-600 hover:bg-brand-700 text-white font-bold gap-2 py-2 px-4 rounded-xl shadow-sm"
+                className="bg-brand-600 hover:bg-brand-700 text-white font-bold gap-2 py-2 px-4 rounded-xl shadow-xs"
               >
                 <Plus className="h-4 w-4" /> Add Lecture / Lab
               </Button>
@@ -856,69 +858,94 @@ export function TimetablePage() {
       {/* ============================================================ */}
       {/* 2. 4 TIMETABLE DASHBOARD SUMMARY GRID CARDS                 */}
       {/* ============================================================ */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
-        <StatCard
-          label="Total Classes"
-          value={statTotalClasses}
-          icon={GraduationCap}
-          tone="brand"
-          caption={isStudent ? 'Enrolled Class Scope' : isTeacher ? 'Assigned Class Scope' : 'Active College Scope'}
-        />
-        <StatCard
-          label="Total Lectures"
-          value={statTotalLectures}
-          icon={BookOpen}
-          tone="info"
-          caption="Scheduled period entries"
-        />
-        <StatCard
-          label="Today's Classes"
-          value={statTodaysClasses}
-          icon={Calendar}
-          tone="success"
-          caption={`Scheduled for ${todayDayName}`}
-        />
-        <StatCard
-          label="Available Rooms"
-          value={statAvailableRooms}
-          icon={DoorOpen}
-          tone="warning"
-          caption="Distinct allocated rooms"
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 print:hidden">
+        <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-xs uppercase font-bold tracking-wider text-ink-400">TOTAL CLASSES</p>
+              <p className="text-2xl sm:text-3xl font-display font-bold text-ink-900 mt-2">{statTotalClasses}</p>
+            </div>
+            <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 shrink-0">
+              <GraduationCap className="h-5 w-5" />
+            </div>
+          </div>
+          <p className="text-xs text-ink-400 font-medium mt-3">
+            {isStudent ? 'Enrolled Class Scope' : isTeacher ? 'Assigned Class Scope' : 'Active College Scope'}
+          </p>
+        </div>
+
+        <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-xs uppercase font-bold tracking-wider text-ink-400">TOTAL LECTURES</p>
+              <p className="text-2xl sm:text-3xl font-display font-bold text-blue-600 mt-2">{statTotalLectures}</p>
+            </div>
+            <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 shrink-0">
+              <BookOpen className="h-5 w-5" />
+            </div>
+          </div>
+          <p className="text-xs text-blue-600 font-medium mt-3">Scheduled period entries</p>
+        </div>
+
+        <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-xs uppercase font-bold tracking-wider text-ink-400">TODAY'S CLASSES</p>
+              <p className="text-2xl sm:text-3xl font-display font-bold text-emerald-600 mt-2">{statTodaysClasses}</p>
+            </div>
+            <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shrink-0">
+              <Calendar className="h-5 w-5" />
+            </div>
+          </div>
+          <p className="text-xs text-emerald-600 font-medium mt-3">Scheduled for {todayDayName}</p>
+        </div>
+
+        <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-xs uppercase font-bold tracking-wider text-ink-400">AVAILABLE ROOMS</p>
+              <p className="text-2xl sm:text-3xl font-display font-bold text-amber-600 mt-2">{statAvailableRooms}</p>
+            </div>
+            <div className="p-2.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 shrink-0">
+              <DoorOpen className="h-5 w-5" />
+            </div>
+          </div>
+          <p className="text-xs text-amber-600 font-medium mt-3">Distinct allocated rooms</p>
+        </div>
       </div>
 
       {/* ============================================================ */}
       {/* 3. CASCADING FILTER TOOLBAR (Matching Classes/Fees UI)      */}
       {/* ============================================================ */}
-      <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 shadow-[var(--shadow-soft)] flex flex-wrap items-center justify-between gap-3 print:hidden">
+      <div className="bg-surface rounded-[var(--radius-card)] border border-border p-3 sm:p-4 shadow-[var(--shadow-soft)] flex flex-wrap items-center justify-between gap-3 print:hidden min-w-0 max-w-full">
         {!isStudent ? (
-          <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 flex-1 min-w-0 w-full sm:w-auto">
             <Select
               options={availableCourses.map((c) => ({ value: c, label: c }))}
               value={filterCourse}
               onChange={(e) => handleCourseChange(e.target.value)}
-              className="w-44"
+              className="w-full sm:w-40 md:w-44"
             />
 
             <Select
               options={availableBranches.map((b) => ({ value: b, label: b }))}
               value={filterBranch}
               onChange={(e) => handleBranchChange(e.target.value)}
-              className="w-48"
+              className="w-full sm:w-44 md:w-48"
             />
 
             <Select
               options={availableYears.map((y) => ({ value: y, label: y }))}
               value={filterYear}
               onChange={(e) => handleYearChange(e.target.value)}
-              className="w-40"
+              className="w-full sm:w-36 md:w-40"
             />
 
             <Select
               options={availableSections.map((s) => ({ value: s, label: s }))}
               value={filterSection}
               onChange={(e) => setFilterSection(e.target.value)}
-              className="w-40"
+              className="w-full sm:w-36 md:w-40"
             />
           </div>
         ) : (

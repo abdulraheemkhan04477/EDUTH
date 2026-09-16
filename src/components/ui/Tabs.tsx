@@ -13,7 +13,7 @@ export interface TabsProps {
 
 export function Tabs({ tabs, activeId, onChange, className = '' }: TabsProps) {
   return (
-    <div className={`flex gap-1 border-b border-border ${className}`} role="tablist">
+    <div className={`flex gap-1 border-b border-border overflow-x-auto max-w-full scrollbar-none flex-nowrap sm:flex-wrap ${className}`} role="tablist">
       {tabs.map((tab) => {
         const isActive = tab.id === activeId
         return (
@@ -21,7 +21,7 @@ export function Tabs({ tabs, activeId, onChange, className = '' }: TabsProps) {
             key={tab.id}
             role="tab"
             aria-selected={isActive}
-            className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px cursor-pointer ${
+            className={`px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-colors border-b-2 -mb-px cursor-pointer shrink-0 whitespace-nowrap ${
               isActive
                 ? 'border-brand-600 text-brand-600'
                 : 'border-transparent text-ink-400 hover:text-ink-900 hover:border-border'
@@ -40,3 +40,4 @@ export function Tabs({ tabs, activeId, onChange, className = '' }: TabsProps) {
     </div>
   )
 }
+

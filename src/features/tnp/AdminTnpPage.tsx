@@ -669,18 +669,18 @@ export function AdminTnpPage() {
   ]
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0 max-w-full">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold text-ink-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-display font-bold text-ink-900 tracking-tight">
             Training & Placement Department
           </h1>
-          <p className="text-sm text-ink-500 mt-1">
+          <p className="text-xs sm:text-sm text-ink-500 mt-0.5 sm:mt-1">
             Complete management of corporate drives, TNP staff, training activities, applications, and placements.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           {activeTab === 'staff' && (
             <Button
               variant="primary"
@@ -719,35 +719,37 @@ export function AdminTnpPage() {
       </div>
 
       {/* Top Sub-Tab Bar */}
-      <Tabs tabs={topTabs} activeId={activeTab} onChange={setActiveTab} />
+      <div className="w-full max-w-full min-w-0">
+        <Tabs tabs={topTabs} activeId={activeTab} onChange={setActiveTab} />
+      </div>
 
       {/* Search & Filter Bar (Matching Teachers / Classes / Fees UI) */}
       {['drives', 'activities', 'applications', 'placements', 'staff'].includes(activeTab) && (
-        <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 shadow-[var(--shadow-soft)] flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
+        <div className="bg-surface rounded-[var(--radius-card)] border border-border p-3 sm:p-4 shadow-[var(--shadow-soft)] flex flex-wrap items-center justify-between gap-3 min-w-0 max-w-full">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 flex-1 min-w-0 w-full sm:w-auto">
             <SearchInput
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search records..."
-              className="w-full sm:w-72"
+              className="w-full sm:w-64 lg:w-72"
             />
             <Select
               value={courseFilter}
               onChange={(e) => handleCourseChange(e.target.value)}
               options={['All', ...COURSES].map((c) => ({ label: c === 'All' ? 'All Courses' : c, value: c }))}
-              className="w-44"
+              className="w-full sm:w-40 md:w-44"
             />
             <Select
               value={branchFilter}
               onChange={(e) => setBranchFilter(e.target.value)}
               options={['All', ...availableBranches].map((b) => ({ label: b === 'All' ? 'All Branches' : b, value: b }))}
-              className="w-48"
+              className="w-full sm:w-44 md:w-48"
             />
             <Select
               value={yearFilter}
               onChange={(e) => setYearFilter(e.target.value)}
               options={['All', ...availableYears].map((y) => ({ label: y === 'All' ? 'All Years' : y, value: y }))}
-              className="w-40"
+              className="w-full sm:w-36 md:w-40"
             />
             {activeTab === 'activities' && (
               <Select
@@ -757,7 +759,7 @@ export function AdminTnpPage() {
                   label: t === 'All' ? 'All Types' : t.charAt(0).toUpperCase() + t.slice(1),
                   value: t,
                 }))}
-                className="w-40"
+                className="w-full sm:w-36 md:w-40"
               />
             )}
           </div>
@@ -772,6 +774,7 @@ export function AdminTnpPage() {
                 setYearFilter('All')
                 setActivityTypeFilter('All')
               }}
+              className="shrink-0"
             >
               Clear Filters
             </Button>
@@ -781,58 +784,66 @@ export function AdminTnpPage() {
 
       {/* TAB 1: TNP DASHBOARD (EXACTLY 4 SUMMARY CARDS PER PRD SECTION 36) */}
       {activeTab === 'dashboard' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             {/* Card 1: Placement Drives */}
-            <div className="bg-surface p-5 rounded-[var(--radius-card)] border border-border shadow-xs space-y-2">
-              <div className="flex items-center justify-between text-slate-500">
-                <span className="text-xs font-bold uppercase tracking-wider text-ink-500">Placement Drives</span>
-                <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg">
+            <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs uppercase font-bold tracking-wider text-ink-400">PLACEMENT DRIVES</p>
+                  <p className="text-2xl sm:text-3xl font-display font-bold text-ink-900 mt-2">{drives.length}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 shrink-0">
                   <Briefcase className="h-5 w-5" />
                 </div>
               </div>
-              <p className="text-3xl font-extrabold text-ink-900 tracking-tight">{drives.length}</p>
-              <p className="text-xs text-blue-600 font-medium flex items-center gap-1">
+              <p className="text-xs text-blue-600 font-medium mt-3 flex items-center gap-1">
                 <Sparkles className="h-3.5 w-3.5" /> {drives.filter((d) => d.status === 'Registration Open').length} Open for Application
               </p>
             </div>
 
             {/* Card 2: Applications */}
-            <div className="bg-surface p-5 rounded-[var(--radius-card)] border border-border shadow-xs space-y-2">
-              <div className="flex items-center justify-between text-slate-500">
-                <span className="text-xs font-bold uppercase tracking-wider text-ink-500">Applications</span>
-                <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-lg">
+            <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs uppercase font-bold tracking-wider text-ink-400">APPLICATIONS</p>
+                  <p className="text-2xl sm:text-3xl font-display font-bold text-ink-900 mt-2">{applications.length}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 shrink-0">
                   <FileText className="h-5 w-5" />
                 </div>
               </div>
-              <p className="text-3xl font-extrabold text-ink-900 tracking-tight">{applications.length}</p>
-              <p className="text-xs text-indigo-600 font-medium">
+              <p className="text-xs text-indigo-600 font-medium mt-3">
                 {applications.filter((a) => a.status === 'Shortlisted' || a.status === 'Selected').length} Shortlisted / Selected
               </p>
             </div>
 
             {/* Card 3: Placements */}
-            <div className="bg-surface p-5 rounded-[var(--radius-card)] border border-border shadow-xs space-y-2">
-              <div className="flex items-center justify-between text-slate-500">
-                <span className="text-xs font-bold uppercase tracking-wider text-ink-500">Placements</span>
-                <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg">
+            <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs uppercase font-bold tracking-wider text-ink-400">PLACEMENTS</p>
+                  <p className="text-2xl sm:text-3xl font-display font-bold text-emerald-600 mt-2">{placements.length}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shrink-0">
                   <Award className="h-5 w-5" />
                 </div>
               </div>
-              <p className="text-3xl font-extrabold text-emerald-600 tracking-tight">{placements.length}</p>
-              <p className="text-xs text-emerald-600 font-medium">Offers Confirmed in DB</p>
+              <p className="text-xs text-emerald-600 font-medium mt-3">Offers Confirmed in DB</p>
             </div>
 
             {/* Card 4: Activities */}
-            <div className="bg-surface p-5 rounded-[var(--radius-card)] border border-border shadow-xs space-y-2">
-              <div className="flex items-center justify-between text-slate-500">
-                <span className="text-xs font-bold uppercase tracking-wider text-ink-500">Activities</span>
-                <div className="p-2.5 bg-amber-50 text-amber-600 rounded-lg">
+            <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs uppercase font-bold tracking-wider text-ink-400">ACTIVITIES</p>
+                  <p className="text-2xl sm:text-3xl font-display font-bold text-ink-900 mt-2">{activities.length}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 shrink-0">
                   <GraduationCap className="h-5 w-5" />
                 </div>
               </div>
-              <p className="text-3xl font-extrabold text-ink-900 tracking-tight">{activities.length}</p>
-              <p className="text-xs text-amber-600 font-medium">Seminars, Events, Trainings, Internships</p>
+              <p className="text-xs text-amber-600 font-medium mt-3">Seminars, Events, Trainings, Internships</p>
             </div>
           </div>
 
@@ -1139,8 +1150,8 @@ export function AdminTnpPage() {
       {activeTab === 'activities' && (
         <div className="space-y-4">
           {/* Sub Type Filters */}
-          <div className="flex flex-wrap items-center justify-between gap-4 bg-surface p-4 rounded-[var(--radius-card)] border border-border shadow-xs">
-            <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-surface p-3 sm:p-4 rounded-[var(--radius-card)] border border-border shadow-[var(--shadow-soft)]">
+            <div className="flex flex-wrap items-center gap-1.5">
               <button
                 onClick={() => setActivityTypeFilter('All')}
                 className={`px-3 py-1.5 text-xs font-bold rounded-[var(--radius-btn)] transition-all cursor-pointer ${

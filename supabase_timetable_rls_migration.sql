@@ -43,57 +43,134 @@ WITH CHECK (
   )
 );
 
--- Policy B: Teacher (Access only for assigned classes in own college)
+-- Policy B: Teacher (Full CRUD access for assigned classes in own college)
 CREATE POLICY "Timetable Entries Teacher Access"
 ON public.timetable_entries
 FOR ALL
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    LEFT JOIN public.teachers t ON (t.email = p.email OR t.id::text = p.teacher_id)
+    LEFT JOIN public.teachers t ON (
+      t.profile_id = p.id
+      OR LOWER(t.email) = LOWER(p.email)
+      OR (p.teacher_id IS NOT NULL AND t.teacher_id = p.teacher_id)
+      OR t.id::text = p.id::text
+    )
     WHERE p.id = auth.uid()
     AND p.role = 'teacher'
     AND p.college_id = timetable_entries.college_id
     AND (
-      -- Teacher is directly assigned to this timetable entry
+      -- 1. Direct period teacher assignment
       timetable_entries.teacher_id = t.teacher_id
       OR timetable_entries.teacher_id = t.id::text
+      OR timetable_entries.teacher_id = p.id::text
+      OR (p.teacher_id IS NOT NULL AND timetable_entries.teacher_id = p.teacher_id)
       OR timetable_entries.teacher_name = t.name
+      OR timetable_entries.teacher_name = p.full_name
       OR
-      -- Or the class matches teacher's assigned_classes
+      -- 2. Teacher is primary class teacher in public.classes
       EXISTS (
         SELECT 1 FROM public.classes c
         WHERE c.college_id = timetable_entries.college_id
-        AND c.course = timetable_entries.course
-        AND c.branch = timetable_entries.branch
-        AND c.semester = timetable_entries.semester
-        AND c.section = timetable_entries.section
-        AND (c.teacher_id = t.teacher_id OR c.teacher_id = t.id::text OR c.teacher_name = t.name)
+        AND (
+          (timetable_entries.class_id IS NOT NULL AND c.id = timetable_entries.class_id)
+          OR
+          (
+            c.course = timetable_entries.course
+            AND c.branch = timetable_entries.branch
+            AND (c.year = timetable_entries.year OR c.semester = timetable_entries.semester)
+            AND c.section = timetable_entries.section
+          )
+        )
+        AND (
+          c.teacher_id = t.teacher_id
+          OR c.teacher_id = t.id::text
+          OR c.teacher_id = p.id::text
+          OR (p.teacher_id IS NOT NULL AND c.teacher_id = p.teacher_id)
+          OR c.teacher_name = t.name
+          OR c.teacher_name = p.full_name
+        )
       )
+      OR
+      -- 3. Class matches teacher's assigned_classes array/JSONB on public.teachers
+      EXISTS (
+        SELECT 1 FROM public.classes c
+        WHERE c.college_id = timetable_entries.college_id
+        AND (
+          (timetable_entries.class_id IS NOT NULL AND c.id = timetable_entries.class_id)
+          OR
+          (
+            c.course = timetable_entries.course
+            AND c.branch = timetable_entries.branch
+            AND (c.year = timetable_entries.year OR c.semester = timetable_entries.semester)
+            AND c.section = timetable_entries.section
+          )
+        )
+        AND (
+          (t.assigned_classes IS NOT NULL AND (
+            t.assigned_classes @> jsonb_build_array(c.id) OR
+            t.assigned_classes @> jsonb_build_array(c.name) OR
+            t.assigned_classes @> jsonb_build_array(c.course || ' ' || c.branch || ' - ' || c.year || ' - ' || c.section) OR
+            t.assigned_classes @> jsonb_build_array(c.course || ' ' || c.branch || ' ' || c.year || ' ' || c.section)
+          ))
+        )
+      )
+      OR
+      -- 4. Fallback if teacher record has department or course matching
+      (t.department = timetable_entries.branch OR t.course = timetable_entries.course)
     )
   )
 )
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    LEFT JOIN public.teachers t ON (t.email = p.email OR t.id::text = p.teacher_id)
+    LEFT JOIN public.teachers t ON (
+      t.profile_id = p.id
+      OR LOWER(t.email) = LOWER(p.email)
+      OR (p.teacher_id IS NOT NULL AND t.teacher_id = p.teacher_id)
+      OR t.id::text = p.id::text
+    )
     WHERE p.id = auth.uid()
     AND p.role = 'teacher'
     AND p.college_id = timetable_entries.college_id
     AND (
       timetable_entries.teacher_id = t.teacher_id
       OR timetable_entries.teacher_id = t.id::text
+      OR timetable_entries.teacher_id = p.id::text
+      OR (p.teacher_id IS NOT NULL AND timetable_entries.teacher_id = p.teacher_id)
       OR timetable_entries.teacher_name = t.name
+      OR timetable_entries.teacher_name = p.full_name
       OR
       EXISTS (
         SELECT 1 FROM public.classes c
         WHERE c.college_id = timetable_entries.college_id
-        AND c.course = timetable_entries.course
-        AND c.branch = timetable_entries.branch
-        AND c.semester = timetable_entries.semester
-        AND c.section = timetable_entries.section
-        AND (c.teacher_id = t.teacher_id OR c.teacher_id = t.id::text OR c.teacher_name = t.name)
+        AND (
+          (timetable_entries.class_id IS NOT NULL AND c.id = timetable_entries.class_id)
+          OR
+          (
+            c.course = timetable_entries.course
+            AND c.branch = timetable_entries.branch
+            AND (c.year = timetable_entries.year OR c.semester = timetable_entries.semester)
+            AND c.section = timetable_entries.section
+          )
+        )
+        AND (
+          c.teacher_id = t.teacher_id
+          OR c.teacher_id = t.id::text
+          OR c.teacher_id = p.id::text
+          OR (p.teacher_id IS NOT NULL AND c.teacher_id = p.teacher_id)
+          OR c.teacher_name = t.name
+          OR c.teacher_name = p.full_name
+          OR (t.assigned_classes IS NOT NULL AND (
+            t.assigned_classes @> jsonb_build_array(c.id) OR
+            t.assigned_classes @> jsonb_build_array(c.name) OR
+            t.assigned_classes @> jsonb_build_array(c.course || ' ' || c.branch || ' - ' || c.year || ' - ' || c.section) OR
+            t.assigned_classes @> jsonb_build_array(c.course || ' ' || c.branch || ' ' || c.year || ' ' || c.section)
+          ))
+        )
       )
+      OR
+      (t.department = timetable_entries.branch OR t.course = timetable_entries.course)
     )
   )
 );
@@ -105,14 +182,15 @@ FOR SELECT
 USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
-    JOIN public.students s ON (s.email = p.email OR s.id::text = p.student_id)
+    LEFT JOIN public.students s ON (s.email = p.email OR s.id::text = p.student_id OR s.profile_id = p.id)
     WHERE p.id = auth.uid()
     AND p.role = 'student'
     AND p.college_id = timetable_entries.college_id
-    AND s.course = timetable_entries.course
-    AND s.branch = timetable_entries.branch
-    AND (s.semester = timetable_entries.semester OR s.year = timetable_entries.year)
-    AND s.section = timetable_entries.section
+    AND (
+      (s.course = timetable_entries.course AND s.branch = timetable_entries.branch AND (s.semester = timetable_entries.semester OR s.year = timetable_entries.year) AND s.section = timetable_entries.section)
+      OR
+      (timetable_entries.class_id IS NOT NULL AND s.class_id = timetable_entries.class_id)
+    )
   )
 );
 

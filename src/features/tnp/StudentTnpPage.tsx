@@ -148,9 +148,9 @@ export function StudentTnpPage() {
   ]
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0 max-w-full">
       {/* Student Profile Overview Card */}
-      <div className="bg-surface p-5 rounded-[var(--radius-card)] border border-border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-surface p-4 sm:p-5 rounded-[var(--radius-card)] border border-border shadow-[var(--shadow-soft)] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <AvatarInitials name={currentStudent.name} size="lg" />
           <div>
@@ -180,39 +180,69 @@ export function StudentTnpPage() {
       </div>
 
       {/* Top Sub-Tab Bar */}
-      <Tabs tabs={topTabs} activeId={activeTab} onChange={setActiveTab} />
+      <div className="w-full max-w-full min-w-0">
+        <Tabs tabs={topTabs} activeId={activeTab} onChange={setActiveTab} />
+      </div>
 
       {/* TAB 1: STUDENT TNP DASHBOARD */}
       {activeTab === 'dashboard' && (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Stat Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-surface p-4 rounded-[var(--radius-card)] border border-border shadow-2xs space-y-1">
-              <span className="text-xs font-semibold text-slate-500 uppercase">Eligible Drives</span>
-              <p className="text-2xl font-bold text-ink-900">{eligibleDrives.length}</p>
-              <p className="text-[11px] text-emerald-600">Matching Your Criteria</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-ink-400">ELIGIBLE DRIVES</p>
+                  <p className="text-2xl sm:text-3xl font-display font-bold text-ink-900 mt-2">{eligibleDrives.length}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shrink-0">
+                  <Briefcase className="h-5 w-5" />
+                </div>
+              </div>
+              <p className="text-xs text-emerald-600 font-medium mt-3">Matching Your Criteria</p>
             </div>
 
-            <div className="bg-surface p-4 rounded-[var(--radius-card)] border border-border shadow-2xs space-y-1">
-              <span className="text-xs font-semibold text-slate-500 uppercase">Applied Drives</span>
-              <p className="text-2xl font-bold text-blue-600">{myDriveApplications.length}</p>
-              <p className="text-[11px] text-ink-400">Applications Sent</p>
+            <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-ink-400">APPLIED DRIVES</p>
+                  <p className="text-2xl sm:text-3xl font-display font-bold text-blue-600 mt-2">{myDriveApplications.length}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 shrink-0">
+                  <GraduationCap className="h-5 w-5" />
+                </div>
+              </div>
+              <p className="text-xs text-ink-400 font-medium mt-3">Applications Sent</p>
             </div>
 
-            <div className="bg-surface p-4 rounded-[var(--radius-card)] border border-border shadow-2xs space-y-1">
-              <span className="text-xs font-semibold text-slate-500 uppercase">Shortlisted</span>
-              <p className="text-2xl font-bold text-amber-600">
-                {myDriveApplications.filter((a) => a.status === 'Shortlisted' || a.status === 'Aptitude' || a.status === 'GD' || a.status === 'PI').length}
-              </p>
-              <p className="text-[11px] text-amber-600 font-medium">Next Rounds</p>
+            <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-ink-400">SHORTLISTED</p>
+                  <p className="text-2xl sm:text-3xl font-display font-bold text-amber-600 mt-2">
+                    {myDriveApplications.filter((a) => a.status === 'Shortlisted' || a.status === 'Aptitude' || a.status === 'GD' || a.status === 'PI').length}
+                  </p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 shrink-0">
+                  <Eye className="h-5 w-5" />
+                </div>
+              </div>
+              <p className="text-xs text-amber-600 font-medium mt-3">Next Rounds</p>
             </div>
 
-            <div className="bg-surface p-4 rounded-[var(--radius-card)] border border-border shadow-2xs space-y-1">
-              <span className="text-xs font-semibold text-slate-500 uppercase">Offers Received</span>
-              <p className="text-2xl font-bold text-emerald-600">
-                {myDriveApplications.filter((a) => a.status === 'Selected').length + (myPlacementOffer ? 1 : 0)}
-              </p>
-              <p className="text-[11px] text-emerald-600 font-medium">Final Selection</p>
+            <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-ink-400">OFFERS RECEIVED</p>
+                  <p className="text-2xl sm:text-3xl font-display font-bold text-emerald-600 mt-2">
+                    {myDriveApplications.filter((a) => a.status === 'Selected').length + (myPlacementOffer ? 1 : 0)}
+                  </p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shrink-0">
+                  <Award className="h-5 w-5" />
+                </div>
+              </div>
+              <p className="text-xs text-emerald-600 font-medium mt-3">Final Selection</p>
             </div>
           </div>
 

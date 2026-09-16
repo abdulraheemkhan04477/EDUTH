@@ -233,47 +233,49 @@ export function TeacherTnpPage() {
   ]
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0 max-w-full">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-display font-bold text-ink-900 tracking-tight">
+        <h1 className="text-xl sm:text-2xl font-display font-bold text-ink-900 tracking-tight">
           Training & Placement — Faculty Panel
         </h1>
-        <p className="text-sm text-ink-500 mt-1">
+        <p className="text-xs sm:text-sm text-ink-500 mt-0.5 sm:mt-1">
           Controlled view access to career placement drives, activities, and assigned class student statuses.
         </p>
       </div>
 
       {/* Top Tab Bar */}
-      <Tabs tabs={topTabs} activeId={activeTab} onChange={setActiveTab} />
+      <div className="w-full max-w-full min-w-0">
+        <Tabs tabs={topTabs} activeId={activeTab} onChange={setActiveTab} />
+      </div>
 
       {/* Search & Filter Bar (Matching Teachers / Classes / Fees UI) */}
       {['drives', 'activities', 'student-status'].includes(activeTab) && (
-        <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 shadow-[var(--shadow-soft)] flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
+        <div className="bg-surface rounded-[var(--radius-card)] border border-border p-3 sm:p-4 shadow-[var(--shadow-soft)] flex flex-wrap items-center justify-between gap-3 min-w-0 max-w-full">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 flex-1 min-w-0 w-full sm:w-auto">
             <SearchInput
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search student or activity..."
-              className="w-full sm:w-72"
+              className="w-full sm:w-64 lg:w-72"
             />
             <Select
               value={courseFilter}
               onChange={(e) => setCourseFilter(e.target.value)}
               options={['All', ...assignedCourses].map((c) => ({ label: c === 'All' ? 'All Courses' : c, value: c }))}
-              className="w-44"
+              className="w-full sm:w-40 md:w-44"
             />
             <Select
               value={branchFilter}
               onChange={(e) => setBranchFilter(e.target.value)}
               options={['All', ...assignedBranches].map((b) => ({ label: b === 'All' ? 'All Branches' : b, value: b }))}
-              className="w-48"
+              className="w-full sm:w-44 md:w-48"
             />
             <Select
               value={yearFilter}
               onChange={(e) => setYearFilter(e.target.value)}
               options={['All', ...assignedYears].map((y) => ({ label: y === 'All' ? 'All Years' : y, value: y }))}
-              className="w-40"
+              className="w-full sm:w-36 md:w-40"
             />
           </div>
           {(search || courseFilter !== 'All' || branchFilter !== 'All' || yearFilter !== 'All') && (
@@ -286,6 +288,7 @@ export function TeacherTnpPage() {
                 setBranchFilter('All')
                 setYearFilter('All')
               }}
+              className="shrink-0"
             >
               Clear Filters
             </Button>
@@ -295,33 +298,45 @@ export function TeacherTnpPage() {
 
       {/* TAB 1: TNP DASHBOARD */}
       {activeTab === 'dashboard' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-surface p-4 rounded-[var(--radius-card)] border border-border space-y-1">
-              <div className="flex items-center justify-between text-slate-500">
-                <span className="text-xs font-semibold uppercase">Assigned Class Students</span>
-                <Users className="h-4 w-4 text-indigo-600" />
+        <div className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+            <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs uppercase font-bold tracking-wider text-ink-400">ASSIGNED CLASS STUDENTS</p>
+                  <p className="text-2xl sm:text-3xl font-display font-bold text-ink-900 mt-2">{assignedStudents.length}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 shrink-0">
+                  <Users className="h-5 w-5" />
+                </div>
               </div>
-              <p className="text-2xl font-bold text-ink-900">{assignedStudents.length}</p>
-              <p className="text-xs text-ink-400">Total Enrolled Students</p>
+              <p className="text-xs text-ink-400 font-medium mt-3">Total Enrolled Students</p>
             </div>
 
-            <div className="bg-surface p-4 rounded-[var(--radius-card)] border border-border space-y-1">
-              <div className="flex items-center justify-between text-slate-500">
-                <span className="text-xs font-semibold uppercase">Total Applications</span>
-                <Briefcase className="h-4 w-4 text-blue-600" />
+            <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs uppercase font-bold tracking-wider text-ink-400">TOTAL APPLICATIONS</p>
+                  <p className="text-2xl sm:text-3xl font-display font-bold text-ink-900 mt-2">{teacherApplications.length}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 shrink-0">
+                  <Briefcase className="h-5 w-5" />
+                </div>
               </div>
-              <p className="text-2xl font-bold text-ink-900">{teacherApplications.length}</p>
-              <p className="text-xs text-blue-600 font-medium">Submitted by Assigned Students</p>
+              <p className="text-xs text-blue-600 font-medium mt-3">Submitted by Assigned Students</p>
             </div>
 
-            <div className="bg-surface p-4 rounded-[var(--radius-card)] border border-border space-y-1">
-              <div className="flex items-center justify-between text-slate-500">
-                <span className="text-xs font-semibold uppercase">Placed Students</span>
-                <Award className="h-4 w-4 text-emerald-600" />
+            <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs uppercase font-bold tracking-wider text-ink-400">PLACED STUDENTS</p>
+                  <p className="text-2xl sm:text-3xl font-display font-bold text-emerald-600 mt-2">{teacherPlacements.length}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shrink-0">
+                  <Award className="h-5 w-5" />
+                </div>
               </div>
-              <p className="text-2xl font-bold text-emerald-600">{teacherPlacements.length}</p>
-              <p className="text-xs text-emerald-600 font-medium">Offers Received</p>
+              <p className="text-xs text-emerald-600 font-medium mt-3">Offers Received</p>
             </div>
           </div>
 

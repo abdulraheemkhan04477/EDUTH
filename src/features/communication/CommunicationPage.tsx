@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { AvatarInitials, Input, Button, Select } from '../../components/ui'
-import { Send, Search, Loader2, Users, MessageSquare } from 'lucide-react'
+import { Send, Search, Loader2, Users, MessageSquare, ArrowLeft } from 'lucide-react'
 import { useAuth } from '../../app/providers/AuthProvider'
 import { useAcademicStore, COURSES, BRANCHES_BY_COURSE } from '../../lib/academicStore'
 import { CommunicationService } from '../../services/communicationService'
@@ -24,6 +24,9 @@ export function CommunicationPage() {
   const [selectedConvId, setSelectedConvId] = useState<string | null>(null)
   const [messages, setMessages] = useState<MessageItem[]>([])
   const [newMessage, setNewMessage] = useState('')
+
+  // Mobile View state: true when viewing chat thread on mobile screen
+  const [showMobileChat, setShowMobileChat] = useState(false)
 
   // Filter & Recipient states
   const [searchQuery, setSearchQuery] = useState('')
@@ -180,6 +183,7 @@ export function CommunicationPage() {
       })
       setSelectedConvId(res.conversation.id)
       setActiveTab('chats')
+      setShowMobileChat(true)
     }
   }
 
@@ -220,10 +224,10 @@ export function CommunicationPage() {
   const selectedConv = conversations.find((c) => c.id === selectedConvId)
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-display font-bold text-ink-900">Communication</h1>
-        <p className="text-sm text-ink-400 mt-1">
+    <div className="w-full max-w-full">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-display font-bold text-ink-900">Communication</h1>
+        <p className="text-xs sm:text-sm text-ink-400 mt-1">
           {isAdmin
             ? 'Communicate with faculty members across courses and departments.'
             : user?.role === 'teacher'
@@ -232,11 +236,15 @@ export function CommunicationPage() {
         </p>
       </div>
 
-      <div className="bg-surface rounded-[var(--radius-card)] shadow-[var(--shadow-soft)] flex h-[calc(100vh-220px)] overflow-hidden">
-        {/* Left Sidebar: Navigation & Filters & Recipient List */}
-        <div className="w-80 border-r border-border flex flex-col shrink-0">
+      <div className="bg-surface rounded-[var(--radius-card)] shadow-[var(--shadow-soft)] flex h-[calc(100vh-180px)] min-h-[450px] sm:min-h-[500px] overflow-hidden w-full border border-border">
+        {/* Left Panel: Contacts / Conversations List */}
+        <div
+          className={`w-full md:w-72 lg:w-80 border-r border-border flex flex-col shrink-0 ${
+            showMobileChat && selectedConv ? 'hidden md:flex' : 'flex'
+          }`}
+        >
           {/* Header Controls & Filters */}
-          <div className="p-3 border-b border-border space-y-2">
+          <div className="p-3 border-b border-border space-y-2 shrink-0">
             {/* Tab Switcher */}
             <div className="flex bg-canvas rounded-lg p-1 border border-border">
               <button
@@ -248,7 +256,7 @@ export function CommunicationPage() {
                 }`}
               >
                 <Users className="h-3.5 w-3.5" />
-                <span>
+                <span className="truncate">
                   {isAdmin ? 'Teachers' : user?.role === 'teacher' ? 'Class Students' : 'Class Teachers'}
                 </span>
               </button>
@@ -261,9 +269,9 @@ export function CommunicationPage() {
                 }`}
               >
                 <MessageSquare className="h-3.5 w-3.5" />
-                <span>Recent Chats</span>
+                <span className="truncate">Recent Chats</span>
                 {conversations.some((c) => c.unread_count > 0) && (
-                  <span className="h-2 w-2 rounded-full bg-brand-600 animate-pulse" />
+                  <span className="h-2 w-2 rounded-full bg-brand-600 animate-pulse shrink-0" />
                 )}
               </button>
             </div>
@@ -278,7 +286,7 @@ export function CommunicationPage() {
                     ? 'Search student name or roll no...'
                     : 'Search class teacher...'
                 }
-                className="text-xs pr-8"
+                className="text-xs pr-8 w-full"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -287,7 +295,7 @@ export function CommunicationPage() {
 
             {/* Admin Course & Branch Filters */}
             {isAdmin && (
-              <div className="grid grid-cols-2 gap-2 pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                 <Select
                   value={selectedCourse}
                   onChange={(e) => {
@@ -295,13 +303,13 @@ export function CommunicationPage() {
                     setSelectedBranch('All Branches')
                   }}
                   options={['All Courses', ...COURSES].map((c) => ({ label: c, value: c }))}
-                  className="text-xs"
+                  className="text-xs w-full"
                 />
                 <Select
                   value={selectedBranch}
                   onChange={(e) => setSelectedBranch(e.target.value)}
                   options={['All Branches', ...availableBranches].map((b) => ({ label: b, value: b }))}
-                  className="text-xs"
+                  className="text-xs w-full"
                 />
               </div>
             )}
@@ -332,13 +340,13 @@ export function CommunicationPage() {
                   <button
                     key={rec.id}
                     onClick={() => handleSelectRecipient(rec)}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-canvas transition-colors border-b border-border cursor-pointer"
+                    className="w-full flex items-center gap-3 px-3.5 py-3 text-left hover:bg-canvas transition-colors border-b border-border cursor-pointer"
                   >
                     <AvatarInitials name={rec.name} size="md" />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-1">
                         <p className="text-sm font-medium text-ink-900 truncate">{rec.name}</p>
-                        <span className="text-[10px] uppercase font-semibold text-brand-600 bg-brand-100/60 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] uppercase font-semibold text-brand-600 bg-brand-100/60 px-1.5 py-0.5 rounded shrink-0">
                           {rec.role}
                         </span>
                       </div>
@@ -360,16 +368,19 @@ export function CommunicationPage() {
                 conversations.map((conv) => (
                   <button
                     key={conv.id}
-                    onClick={() => setSelectedConvId(conv.id)}
-                    className={`w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-canvas transition-colors border-b border-border cursor-pointer ${
+                    onClick={() => {
+                      setSelectedConvId(conv.id)
+                      setShowMobileChat(true)
+                    }}
+                    className={`w-full flex items-start gap-3 px-3.5 py-3 text-left hover:bg-canvas transition-colors border-b border-border cursor-pointer ${
                       selectedConvId === conv.id ? 'bg-brand-100/50' : ''
                     }`}
                   >
                     <AvatarInitials name={conv.target_name} size="md" />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-1">
                         <p className="text-sm font-medium text-ink-900 truncate">{conv.target_name}</p>
-                        <span className="text-xs text-ink-400 shrink-0">{formatTime(conv.last_message_at)}</span>
+                        <span className="text-[11px] text-ink-400 shrink-0">{formatTime(conv.last_message_at)}</span>
                       </div>
                       <p className="text-xs text-ink-400 capitalize">{conv.target_role}</p>
                       <p className="text-xs text-ink-400 truncate mt-0.5">
@@ -388,19 +399,35 @@ export function CommunicationPage() {
           </div>
         </div>
 
-        {/* Right Message Thread */}
-        <div className="flex-1 flex flex-col">
+        {/* Right Panel: Chat Thread Area */}
+        <div
+          className={`w-full flex-1 flex flex-col min-w-0 ${
+            !showMobileChat || !selectedConv ? 'hidden md:flex' : 'flex'
+          }`}
+        >
           {selectedConv ? (
             <>
-              <div className="p-4 border-b border-border flex items-center gap-3">
-                <AvatarInitials name={selectedConv.target_name} />
-                <div>
-                  <p className="text-sm font-medium text-ink-900">{selectedConv.target_name}</p>
-                  <p className="text-xs text-ink-400 capitalize">{selectedConv.target_role}</p>
+              {/* Chat Thread Header */}
+              <div className="p-3 sm:p-4 border-b border-border flex items-center justify-between gap-3 shrink-0">
+                <div className="flex items-center gap-3 min-w-0">
+                  {/* Mobile Back Button */}
+                  <button
+                    onClick={() => setShowMobileChat(false)}
+                    className="md:hidden p-1.5 -ml-1 text-ink-600 hover:text-ink-900 hover:bg-canvas rounded-lg transition-colors cursor-pointer shrink-0"
+                    aria-label="Back to contacts"
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                  </button>
+                  <AvatarInitials name={selectedConv.target_name} />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-ink-900 truncate">{selectedConv.target_name}</p>
+                    <p className="text-xs text-ink-400 capitalize truncate">{selectedConv.target_role}</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {/* Chat Messages History */}
+              <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 min-w-0">
                 {isLoadingMsgs ? (
                   <div className="h-full flex items-center justify-center text-ink-400">
                     <Loader2 className="h-5 w-5 animate-spin mr-2" />
@@ -408,7 +435,7 @@ export function CommunicationPage() {
                   </div>
                 ) : messages.length === 0 ? (
                   <div className="h-full flex items-center justify-center text-ink-400">
-                    <p className="text-xs">No messages in this conversation yet. Type below to start!</p>
+                    <p className="text-xs text-center">No messages in this conversation yet. Type below to start!</p>
                   </div>
                 ) : (
                   messages.map((msg) => {
@@ -416,12 +443,12 @@ export function CommunicationPage() {
                     return (
                       <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                         <div
-                          className={`max-w-xs lg:max-w-md px-4 py-2.5 rounded-[var(--radius-card)] text-sm ${
+                          className={`max-w-[85%] sm:max-w-xs lg:max-w-md px-3.5 py-2.5 rounded-[var(--radius-card)] text-sm ${
                             isMine ? 'bg-brand-600 text-white' : 'bg-canvas text-ink-900'
                           }`}
                         >
-                          <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                          <p className={`text-xs mt-1 ${isMine ? 'text-white/70' : 'text-ink-400'}`}>
+                          <p className="whitespace-pre-wrap break-words overflow-hidden">{msg.content}</p>
+                          <p className={`text-[10px] sm:text-xs mt-1 text-right ${isMine ? 'text-white/70' : 'text-ink-400'}`}>
                             {formatTime(msg.created_at)}
                           </p>
                         </div>
@@ -432,7 +459,8 @@ export function CommunicationPage() {
                 <div ref={messagesEndRef} />
               </div>
 
-              <div className="p-4 border-t border-border flex items-center gap-3">
+              {/* Chat Input Bar */}
+              <div className="p-3 sm:p-4 border-t border-border flex items-center gap-2 sm:gap-3 shrink-0 bg-surface">
                 <Input
                   placeholder="Type a message..."
                   value={newMessage}
@@ -443,9 +471,9 @@ export function CommunicationPage() {
                       handleSendMessage()
                     }
                   }}
-                  className="flex-1"
+                  className="flex-1 min-w-0 text-xs sm:text-sm"
                 />
-                <Button size="sm" onClick={handleSendMessage} disabled={isSending || !newMessage.trim()}>
+                <Button size="sm" onClick={handleSendMessage} disabled={isSending || !newMessage.trim()} className="shrink-0">
                   {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 </Button>
               </div>

@@ -8,7 +8,6 @@ import {
   Select,
   Textarea,
   SearchInput,
-  StatCard,
 } from '../../components/ui'
 import { useToast } from '../../components/ui/Toast'
 import { useAuth } from '../../app/providers/AuthProvider'
@@ -469,69 +468,92 @@ export function AssignmentsListPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0 max-w-full">
       {/* Header with Prominent Dashboard Typography */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-ink-900 tracking-tight flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 border border-brand-200/60 dark:border-brand-800/60 shadow-sm">
-              <BookOpen className="h-6 w-6" />
+          <h1 className="text-xl sm:text-2xl font-display font-bold text-ink-900 tracking-tight flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 border border-brand-200/60 dark:border-brand-800/60 shadow-xs">
+              <BookOpen className="h-5 w-5" />
             </div>
             Assignments Dashboard
           </h1>
-          <p className="text-sm font-medium text-ink-400 mt-1.5">
+          <p className="text-xs sm:text-sm font-medium text-ink-400 mt-1">
             {role === 'student'
               ? `Enrolled Academic Roster: ${studentCourse} • ${studentBranch} • ${studentSemester} (${studentSection})`
               : `${visibleAssignments.length} active assignments configured in academic structure`}
           </p>
         </div>
         {role !== 'student' && (
-          <Button onClick={handleOpenNewModal} className="bg-brand-600 hover:bg-brand-700 text-white shadow-md text-sm font-bold py-2.5 px-4 rounded-xl flex items-center gap-2 shrink-0">
+          <Button onClick={handleOpenNewModal} className="bg-brand-600 hover:bg-brand-700 text-white shadow-xs text-sm font-bold py-2.5 px-4 rounded-xl flex items-center gap-2 shrink-0">
             <Plus className="h-4 w-4" /> New Assignment
           </Button>
         )}
       </div>
 
-      {/* 4 Stat Summary Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          label="Total Assignments"
-          value={assignmentStats.total}
-          icon={BookOpen}
-          tone="brand"
-          caption="Total active roster items"
-        />
-        <StatCard
-          label="Active Assignments"
-          value={assignmentStats.active}
-          icon={Clock}
-          tone="warning"
-          caption="Open for submission"
-        />
-        <StatCard
-          label="Completed"
-          value={assignmentStats.completed}
-          icon={CheckCircle2}
-          tone="success"
-          caption="Marked completed / evaluated"
-        />
-        <StatCard
-          label="Overdue / Pending"
-          value={assignmentStats.overdue}
-          icon={AlertCircle}
-          tone="danger"
-          caption="Past due deadline"
-        />
+      {/* 4 Stat Summary Cards Grid (Matching Fees & Test/Exam Dashboard) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-xs uppercase font-bold tracking-wider text-ink-400">TOTAL ASSIGNMENTS</p>
+              <p className="text-2xl sm:text-3xl font-display font-bold text-ink-900 mt-2">{assignmentStats.total}</p>
+            </div>
+            <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 shrink-0">
+              <BookOpen className="h-5 w-5" />
+            </div>
+          </div>
+          <p className="text-xs text-ink-400 font-medium mt-3">Total active roster items</p>
+        </div>
+
+        <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-xs uppercase font-bold tracking-wider text-ink-400">ACTIVE ASSIGNMENTS</p>
+              <p className="text-2xl sm:text-3xl font-display font-bold text-amber-600 mt-2">{assignmentStats.active}</p>
+            </div>
+            <div className="p-2.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 shrink-0">
+              <Clock className="h-5 w-5" />
+            </div>
+          </div>
+          <p className="text-xs text-amber-600 font-medium mt-3">Open for submission</p>
+        </div>
+
+        <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-xs uppercase font-bold tracking-wider text-ink-400">COMPLETED</p>
+              <p className="text-2xl sm:text-3xl font-display font-bold text-emerald-600 mt-2">{assignmentStats.completed}</p>
+            </div>
+            <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shrink-0">
+              <CheckCircle2 className="h-5 w-5" />
+            </div>
+          </div>
+          <p className="text-xs text-emerald-600 font-medium mt-3">Marked completed / evaluated</p>
+        </div>
+
+        <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 sm:p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between hover:shadow-md transition-all">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-xs uppercase font-bold tracking-wider text-ink-400">OVERDUE / PENDING</p>
+              <p className="text-2xl sm:text-3xl font-display font-bold text-rose-600 mt-2">{assignmentStats.overdue}</p>
+            </div>
+            <div className="p-2.5 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 shrink-0">
+              <AlertCircle className="h-5 w-5" />
+            </div>
+          </div>
+          <p className="text-xs text-rose-600 font-medium mt-3">Past due deadline</p>
+        </div>
       </div>
 
       {/* Search & Filter Bar ([ All Course ] [ All Branch ] [ All Year ]) */}
-      <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 shadow-[var(--shadow-soft)] flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
+      <div className="bg-surface rounded-[var(--radius-card)] border border-border p-3 sm:p-4 shadow-[var(--shadow-soft)] flex flex-wrap items-center justify-between gap-3 min-w-0 max-w-full">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 flex-1 min-w-0 w-full sm:w-auto">
           <SearchInput
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search title, subject, faculty..."
-            className="w-full sm:w-72"
+            className="w-full sm:w-64 lg:w-72"
           />
 
           <Select
@@ -544,7 +566,7 @@ export function AssignmentsListPage() {
               { value: 'All', label: 'All Course' },
               ...courses.map((c) => ({ value: c, label: c })),
             ]}
-            className="w-44"
+            className="w-full sm:w-40 md:w-44"
           />
 
           <Select
@@ -558,7 +580,7 @@ export function AssignmentsListPage() {
                 label: b,
               })),
             ]}
-            className="w-48"
+            className="w-full sm:w-44 md:w-48"
           />
 
           <Select
@@ -571,7 +593,7 @@ export function AssignmentsListPage() {
               { value: '3rd Year', label: '3rd Year' },
               { value: '4th Year', label: '4th Year' },
             ]}
-            className="w-44"
+            className="w-full sm:w-36 md:w-40"
           />
         </div>
 
@@ -585,6 +607,7 @@ export function AssignmentsListPage() {
               setSelectedBranch('All')
               setSelectedYear('All')
             }}
+            className="shrink-0"
           >
             Clear Filters
           </Button>

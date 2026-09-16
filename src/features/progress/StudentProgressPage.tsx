@@ -14,7 +14,7 @@ export function StudentProgressPage() {
   const isParent = role === 'parent'
   const isTeacher = role === 'teacher'
   const { students, teachers, classes, getStudentAttendancePercentage } = useAcademicStore()
-  const { getStudentPublishedResults } = useExamStore()
+  const { getStudentPublishedResults, exams: storeExams } = useExamStore()
   const { suspensions } = useSuspensionStore()
 
   const userCollegeId = user?.college_id || '13695a78-0105-4bde-bc85-d664bb66637e'
@@ -36,14 +36,47 @@ export function StudentProgressPage() {
   const [filterYear, setFilterYear] = useState(isTeacher && teacherAssignedClasses[0] ? teacherAssignedClasses[0].year : '1st Year')
   const [filterSemester, setFilterSemester] = useState('Semester 1')
   const [selectedStudentId, setSelectedStudentId] = useState('')
+  const [selectedExamId, setSelectedExamId] = useState('')
 
-  // Fresh fetched students for selected class (BUG 1 FIX)
+  // Fresh fetched students for selected class (targeted DB query)
   const [groupStudents, setGroupStudents] = useState<any[]>([])
 
-  // Fresh fetched exam results for selected student (BUG 2 & 3 FIX)
+  // Available exams for the selected student's class
+  const [availableExams, setAvailableExams] = useState<any[]>([])
+
+  // Fresh fetched exam results for selected student (+ selected exam)
   const [studentPublishedResults, setStudentPublishedResults] = useState<any[]>([])
 
-  // BUG 1 FIX: Fresh query for students matching Course + Branch + Semester
+  // Target Student Resolution
+  const loggedInStudent = useMemo(() => {
+    if (!isStudent) return null
+    const userEmailLower = user?.email?.toLowerCase().trim()
+    return students.find(
+      (s) =>
+        (user?.student_id && (s.id === user.student_id || s.student_id === user.student_id || s.roll_no === user.student_id)) ||
+        (userEmailLower && s.email?.toLowerCase().trim() === userEmailLower) ||
+        (user?.id && s.id === user.id)
+    ) || null
+  }, [isStudent, user, students])
+
+  const parentLinkedStudent = useMemo(() => {
+    if (!isParent) return null
+    const linkedStudentId = user?.child_student_id || user?.student_id
+    const userEmailLower = user?.email?.toLowerCase().trim()
+    return students.find(
+      (s) =>
+        (linkedStudentId && (s.id === linkedStudentId || s.student_id === linkedStudentId || s.roll_no === linkedStudentId)) ||
+        (userEmailLower && s.parent_email?.toLowerCase().trim() === userEmailLower)
+    ) || null
+  }, [isParent, user, students])
+
+  const currentStudent = isStudent
+    ? loggedInStudent
+    : isParent
+    ? parentLinkedStudent
+    : groupStudents.find((s) => s.id === selectedStudentId) || groupStudents[0] || null
+
+  // Fast targeted query for students matching Course + Branch + Semester
   useEffect(() => {
     let isMounted = true
 
@@ -52,14 +85,22 @@ export function StudentProgressPage() {
 
       try {
         if (isSupabaseConfigured) {
-          let query = supabase.from('students').select('*')
           const normCol = normalizeCollegeId(userCollegeId) || userCollegeId
-          query = query.in('college_id', [userCollegeId, normCol, '13695a78-0105-4bde-bc85-d664bb66637e'])
+          const collegeIds = Array.from(new Set([userCollegeId, normCol, '13695a78-0105-4bde-bc85-d664bb66637e'].filter(Boolean)))
+
+          // Targeted select query - only needed columns and course filter directly in DB
+          let query = supabase
+            .from('students')
+            .select('id, student_id, name, roll_no, course, branch, year, semester, section, college_id')
+            .in('college_id', collegeIds)
+
+          if (filterCourse) {
+            query = query.eq('course', filterCourse)
+          }
 
           const { data, error } = await query
           if (!error && data && isMounted) {
             const filtered = data.filter((s: any) => {
-              if (filterCourse && s.course !== filterCourse) return false
               if (filterBranch && !isBranchMatch(s.branch, filterBranch)) return false
               if (filterSemester && !isSemesterMatch(s.semester, filterSemester)) return false
               if (isTeacher && teacherAssignedClasses.length > 0) {
@@ -75,18 +116,20 @@ export function StudentProgressPage() {
             if (filtered.length > 0) {
               if (!filtered.some((s: any) => s.id === selectedStudentId)) {
                 setSelectedStudentId(filtered[0].id)
+                setSelectedExamId('') // Reset exam when student changes
               }
             } else {
               setSelectedStudentId('')
+              setSelectedExamId('')
             }
             return
           }
         }
       } catch (e) {
-        console.warn('Supabase fresh student fetch notice:', e)
+        console.warn('Supabase targeted student fetch notice:', e)
       }
 
-      // Fallback if offline/Supabase error
+      // Fallback from store if offline / Supabase error
       if (isMounted) {
         const permittedStudents = isTeacher
           ? students.filter((s) =>
@@ -107,9 +150,11 @@ export function StudentProgressPage() {
         if (filtered.length > 0) {
           if (!filtered.some((s) => s.id === selectedStudentId)) {
             setSelectedStudentId(filtered[0].id)
+            setSelectedExamId('')
           }
         } else {
           setSelectedStudentId('')
+          setSelectedExamId('')
         }
       }
     }
@@ -120,106 +165,180 @@ export function StudentProgressPage() {
     }
   }, [filterCourse, filterBranch, filterSemester, filterYear, isTeacher, userCollegeId, isStudent, isParent])
 
-  // Authenticated Student Resolution
-  const loggedInStudent = useMemo(() => {
-    if (!isStudent) return null
-    const userEmailLower = user?.email?.toLowerCase().trim()
-    return students.find(
-      (s) =>
-        (user?.student_id && (s.id === user.student_id || s.student_id === user.student_id || s.roll_no === user.student_id)) ||
-        (userEmailLower && s.email?.toLowerCase().trim() === userEmailLower) ||
-        (user?.id && s.id === user.id)
-    ) || null
-  }, [isStudent, user, students])
-
-  // Authenticated Parent Linked Student Resolution
-  const parentLinkedStudent = useMemo(() => {
-    if (!isParent) return null
-    const linkedStudentId = user?.child_student_id || user?.student_id
-    const userEmailLower = user?.email?.toLowerCase().trim()
-    return students.find(
-      (s) =>
-        (linkedStudentId && (s.id === linkedStudentId || s.student_id === linkedStudentId || s.roll_no === linkedStudentId)) ||
-        (userEmailLower && s.parent_email?.toLowerCase().trim() === userEmailLower)
-    ) || null
-  }, [isParent, user, students])
-
-  // Target Student Object
-  const currentStudent = isStudent
-    ? loggedInStudent
-    : isParent
-    ? parentLinkedStudent
-    : groupStudents.find((s) => s.id === selectedStudentId) || groupStudents[0] || null
-
-  // BUG 2 & BUG 3 FIX: Fetch marks WHERE student_id = selectedId AND published = true AND obtained_marks IS NOT NULL
+  // Parallel fetch & robust matching for class-relevant Exams & Student Marks
   useEffect(() => {
     let isMounted = true
 
-    async function fetchStudentMarks() {
+    async function fetchExamsAndMarks() {
       if (!currentStudent) {
+        setAvailableExams([])
         setStudentPublishedResults([])
         return
       }
 
       const selectedId = currentStudent.id || currentStudent.profile_id || currentStudent.student_id
       if (!selectedId) {
+        setAvailableExams([])
         setStudentPublishedResults([])
         return
       }
 
+      // Collect all student identifier variants
+      const studentIdsToMatch = Array.from(
+        new Set(
+          [
+            selectedId,
+            currentStudent.id,
+            currentStudent.profile_id,
+            currentStudent.student_id,
+            currentStudent.roll_no,
+            `STU-${currentStudent.roll_no}`,
+            (currentStudent.roll_no || '').replace(/^STU-/i, ''),
+          ].filter(Boolean) as string[]
+        )
+      )
+
+      // 1. Always get authoritative store published results as robust baseline
+      const storePublishedResults = getStudentPublishedResults(
+        currentStudent.id,
+        currentStudent.roll_no,
+        currentStudent.student_id,
+        currentStudent.email
+      )
+
+      let rawDbExams: any[] = []
+      let rawDbResults: any[] = []
+
       try {
         if (isSupabaseConfigured) {
-          // Query fresh results WHERE student_id = selectedId AND (published = true OR is_published = true) AND obtained_marks IS NOT NULL
-          const { data, error } = await supabase
-            .from('results')
-            .select('*')
-            .eq('student_id', selectedId)
-            .or('published.eq.true,is_published.eq.true')
-            .not('obtained_marks', 'is', null)
+          const normCol = normalizeCollegeId(userCollegeId) || userCollegeId
+          const collegeIds = Array.from(new Set([userCollegeId, normCol, '13695a78-0105-4bde-bc85-d664bb66637e'].filter(Boolean)))
 
-          if (!error && data && isMounted) {
-            // Strict filter: ONLY selected student's marks and ONLY published non-null obtained_marks
-            const exactMarks = data.filter((r: any) => {
-              const matchesStudent = r.student_id === selectedId
-              const isPub = r.published === true || r.is_published === true
-              const hasMarks = r.obtained_marks !== null && r.obtained_marks !== undefined
+          // Fetch Exams for student's course & college
+          let examsQuery = supabase
+            .from('exams')
+            .select('id, title, type, course, branch, year, semester, section, status, date, subject')
+            .in('college_id', collegeIds)
 
-              return matchesStudent && isPub && hasMarks
-            }).map((r: any) => ({
-              id: r.id,
-              subject: r.subject || r.exam_subject_name || 'Subject',
-              obtained_marks: Number(r.obtained_marks ?? r.marks),
-              max_marks: Number(r.max_marks) || 100,
-              status: r.status || (Number(r.obtained_marks) >= Number(r.passing_marks || 40) ? 'Pass' : 'Fail'),
-              semester: r.semester || currentStudent.semester || 'Semester 1',
-            }))
-
-            setStudentPublishedResults(exactMarks)
-            return
+          if (currentStudent.course) {
+            examsQuery = examsQuery.eq('course', currentStudent.course)
           }
+
+          // Fetch Results for student's identifiers
+          let resQuery = supabase
+            .from('results')
+            .select('id, exam_id, exam_subject_id, subject, exam_subject_name, obtained_marks, marks, max_marks, passing_marks, status, semester, is_published, published, student_id, roll_no')
+            .in('student_id', studentIdsToMatch)
+
+          const [examsRes, resultsRes] = await Promise.all([examsQuery, resQuery])
+          if (examsRes.data) rawDbExams = examsRes.data
+          if (resultsRes.data) rawDbResults = resultsRes.data
         }
       } catch (e) {
-        console.warn('Supabase fresh marks fetch notice:', e)
+        console.warn('Supabase exams & results fetch notice:', e)
       }
 
-      // Fallback from examStore
-      if (isMounted) {
-        const storeResults = getStudentPublishedResults(currentStudent.id, currentStudent.roll_no, currentStudent.student_id)
-        const exactMarks = storeResults.filter((r) => {
-          const matchesStudent = r.student_id === selectedId
-          const isPub = r.is_published === true || (r as any).published === true
+      if (!isMounted) return
+
+      // Combine DB Exams + storeExams, scoped strictly to student's class
+      const allExamsList = [...rawDbExams, ...(storeExams || [])]
+      const uniqueExamsMap = new Map<string, any>()
+
+      allExamsList.forEach((e: any) => {
+        if (!e || !e.id) return
+        const courseMatch = !e.course || e.course === currentStudent.course
+        const branchMatch = !e.branch || e.branch === 'All' || e.branch === 'All Branches' || isBranchMatch(e.branch, currentStudent.branch)
+        const yearMatch = !e.year || e.year === 'All' || e.year === currentStudent.year
+        const semMatch = !e.semester || isSemesterMatch(e.semester, currentStudent.semester)
+
+        if (courseMatch && branchMatch && yearMatch && semMatch) {
+          if (!uniqueExamsMap.has(e.id)) {
+            uniqueExamsMap.set(e.id, {
+              id: e.id,
+              title: e.title || `${e.type || 'Exam'} (${e.subject || 'General'})`,
+              type: e.type,
+              course: e.course,
+              branch: e.branch,
+              year: e.year,
+              semester: e.semester,
+              subject: e.subject,
+            })
+          }
+        }
+      })
+
+      const classExams = Array.from(uniqueExamsMap.values())
+
+      // Combine DB Results + Store Results
+      const formattedDbResults = rawDbResults
+        .filter((r: any) => {
+          const isPub = r.published === true || r.is_published === true
           const hasMarks = r.obtained_marks !== null && r.obtained_marks !== undefined
-          return matchesStudent && isPub && hasMarks
+          return isPub && hasMarks
         })
-        setStudentPublishedResults(exactMarks)
+        .map((r: any) => ({
+          id: r.id,
+          exam_id: r.exam_id,
+          exam_subject_id: r.exam_subject_id,
+          subject: r.subject || r.exam_subject_name || 'Subject',
+          obtained_marks: Number(r.obtained_marks ?? r.marks),
+          max_marks: Number(r.max_marks) || 100,
+          status: r.status || (Number(r.obtained_marks) >= Number(r.passing_marks || 40) ? 'Pass' : 'Fail'),
+          semester: r.semester || currentStudent.semester || 'Semester 1',
+        }))
+
+      const formattedStoreResults = storePublishedResults.map((r) => ({
+        id: r.id,
+        exam_id: r.exam_id,
+        exam_subject_id: r.exam_subject_id,
+        subject: r.subject,
+        obtained_marks: Number(r.obtained_marks),
+        max_marks: Number(r.max_marks) || 100,
+        status: r.status,
+        semester: r.semester || currentStudent.semester || 'Semester 1',
+      }))
+
+      // Deduplicate results by ID or (subject + exam_id)
+      const combinedResultsMap = new Map<string, any>()
+      formattedDbResults.forEach((r) => combinedResultsMap.set(r.id, r))
+      formattedStoreResults.forEach((r) => {
+        if (!combinedResultsMap.has(r.id)) {
+          const altKey = `${r.exam_id || ''}_${r.subject}`
+          if (!Array.from(combinedResultsMap.values()).some((x) => `${x.exam_id || ''}_${x.subject}` === altKey)) {
+            combinedResultsMap.set(r.id, r)
+          }
+        }
+      })
+
+      const allStudentResults = Array.from(combinedResultsMap.values())
+
+      // Filter for selected exam
+      let filteredMarks = allStudentResults
+      if (selectedExamId) {
+        const selectedExamObj = classExams.find((e) => e.id === selectedExamId)
+        filteredMarks = allStudentResults.filter((r) => {
+          if (r.exam_id && r.exam_id === selectedExamId) return true
+          if (r.exam_subject_id && r.exam_subject_id === selectedExamId) return true
+          if (selectedExamObj) {
+            if (selectedExamObj.id && r.exam_id === selectedExamObj.id) return true
+            if (selectedExamObj.title && r.exam_title && r.exam_title.toLowerCase() === selectedExamObj.title.toLowerCase()) return true
+            if (selectedExamObj.title && r.title && r.title.toLowerCase() === selectedExamObj.title.toLowerCase()) return true
+            if (selectedExamObj.title && r.subject && selectedExamObj.title.toLowerCase().includes(r.subject.toLowerCase())) return true
+            if (selectedExamObj.subject && r.subject && r.subject.toLowerCase() === selectedExamObj.subject.toLowerCase()) return true
+          }
+          return false
+        })
       }
+
+      setAvailableExams(classExams)
+      setStudentPublishedResults(filteredMarks)
     }
 
-    fetchStudentMarks()
+    fetchExamsAndMarks()
     return () => {
       isMounted = false
     }
-  }, [currentStudent?.id, currentStudent?.profile_id, currentStudent?.roll_no, getStudentPublishedResults])
+  }, [currentStudent?.id, currentStudent?.profile_id, currentStudent?.roll_no, currentStudent?.student_id, currentStudent?.course, currentStudent?.branch, currentStudent?.year, currentStudent?.semester, selectedExamId, getStudentPublishedResults, userCollegeId, storeExams])
 
   // Real Attendance Percentage
   const attendancePercentage = currentStudent ? getStudentAttendancePercentage(currentStudent.id) : 0
@@ -312,7 +431,7 @@ export function StudentProgressPage() {
         core: Math.max(0, semAvg - 3),
       }
     })
-  }, [studentPublishedResults, currentStudent, avgPercentage])
+  }, [studentPublishedResults, currentStudent, avgPercentage, attendancePercentage])
 
   if (!currentStudent && (isStudent || isParent)) {
     return (
@@ -349,7 +468,7 @@ export function StudentProgressPage() {
         </div>
       </div>
 
-      {/* Academic Filter Bar (Hidden for Student and Parent) */}
+      {/* Academic & Exam Filter Bar (Hidden for Student and Parent unless Exam filter available) */}
       {!isStudent && !isParent && (
         <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 shadow-[var(--shadow-soft)] mb-6 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
@@ -360,13 +479,17 @@ export function StudentProgressPage() {
                 const c = e.target.value
                 setFilterCourse(c)
                 setFilterBranch(BRANCHES_BY_COURSE[c]?.[0] || '')
+                setSelectedExamId('')
               }}
               className="w-full sm:w-40"
             />
             <Select
               options={(BRANCHES_BY_COURSE[filterCourse] || []).map((b) => ({ value: b, label: b }))}
               value={filterBranch}
-              onChange={(e) => setFilterBranch(e.target.value)}
+              onChange={(e) => {
+                setFilterBranch(e.target.value)
+                setSelectedExamId('')
+              }}
               className="w-full sm:w-48"
             />
             <Select
@@ -376,19 +499,51 @@ export function StudentProgressPage() {
                 const y = e.target.value
                 setFilterYear(y)
                 setFilterSemester(SEMESTERS_BY_YEAR_COURSE(y, filterCourse)[0] || 'Semester 1')
+                setSelectedExamId('')
               }}
               className="w-full sm:w-36"
             />
             <Select
               options={SEMESTERS_BY_YEAR_COURSE(filterYear, filterCourse).map((s) => ({ value: s, label: s }))}
               value={filterSemester}
-              onChange={(e) => setFilterSemester(e.target.value)}
+              onChange={(e) => {
+                setFilterSemester(e.target.value)
+                setSelectedExamId('')
+              }}
               className="w-full sm:w-40"
             />
             <Select
               options={groupStudents.map((s) => ({ value: s.id, label: `${s.name} (${s.roll_no})` }))}
               value={currentStudent?.id || ''}
-              onChange={(e) => setSelectedStudentId(e.target.value)}
+              onChange={(e) => {
+                setSelectedStudentId(e.target.value)
+                setSelectedExamId('')
+              }}
+              className="w-full sm:w-64"
+            />
+            <Select
+              options={
+                availableExams.length > 0
+                  ? [{ value: '', label: 'All Exams' }, ...availableExams.map((e) => ({ value: e.id, label: e.title }))]
+                  : [{ value: '', label: 'No Exams Available' }]
+              }
+              value={selectedExamId}
+              onChange={(e) => setSelectedExamId(e.target.value)}
+              className="w-full sm:w-56"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Student / Parent Exam Selection Bar */}
+      {(isStudent || isParent) && availableExams.length > 0 && (
+        <div className="bg-surface rounded-[var(--radius-card)] border border-border p-4 shadow-[var(--shadow-soft)] mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-semibold text-ink-600">Select Exam:</span>
+            <Select
+              options={[{ value: '', label: 'All Exams' }, ...availableExams.map((e) => ({ value: e.id, label: e.title }))]}
+              value={selectedExamId}
+              onChange={(e) => setSelectedExamId(e.target.value)}
               className="w-full sm:w-64"
             />
           </div>
@@ -524,4 +679,5 @@ export function StudentProgressPage() {
     </div>
   )
 }
+
 
