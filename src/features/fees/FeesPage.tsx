@@ -1691,6 +1691,45 @@ export function FeesPage() {
           </p>
         </Modal>
       )}
+
+      {/* RECEIPT VIEW MODAL */}
+      {selectedReceipt && (
+        <Modal
+          isOpen={showReceiptModal}
+          onClose={() => setShowReceiptModal(false)}
+          title="Official Fee Payment Receipt"
+          footer={
+            <Button onClick={() => setShowReceiptModal(false)} className="bg-indigo-600 text-white font-bold">
+              Close Receipt
+            </Button>
+          }
+        >
+          <div className="space-y-4 text-sm">
+            <div className="p-5 border border-slate-200 rounded-2xl bg-slate-50 space-y-3 shadow-inner">
+              <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+                <div>
+                  <h4 className="font-bold text-slate-900 text-base">Official Fee Receipt</h4>
+                  <p className="text-xs text-slate-500">RRIMT College Management System</p>
+                </div>
+                <span className="text-xs font-mono font-bold text-indigo-600 px-2.5 py-1 bg-indigo-50 border border-indigo-100 rounded-lg">
+                  {selectedReceipt.receipt_no}
+                </span>
+              </div>
+              <div className="space-y-2 text-slate-700 text-xs sm:text-sm">
+                <p>Student Name: <strong className="text-slate-900">{selectedReceipt.student_name}</strong> ({selectedReceipt.roll_no})</p>
+                <p>Course & Branch: <strong className="text-slate-900">{selectedReceipt.course} • {selectedReceipt.branch}</strong></p>
+                <p>Amount Paid: <strong className="text-emerald-600 font-bold text-base">₹{selectedReceipt.amount.toLocaleString()}</strong></p>
+                <p>Payment Method: <strong className="text-slate-900">{selectedReceipt.payment_method}</strong></p>
+                <p>Transaction Ref: <strong className="font-mono text-slate-900">{selectedReceipt.transaction_id}</strong></p>
+                <p>Payment Date: <strong className="text-slate-900">{selectedReceipt.payment_date}</strong></p>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-emerald-600 font-bold pt-3 border-t border-slate-200">
+                <CheckCircle2 className="h-4 w-4" /> Official College Seal - Payment Verified & Settled
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }

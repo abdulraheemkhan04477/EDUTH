@@ -11,6 +11,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet" />
     <script>
       (function() {
+        // Suppress browser extension / performance metrics observer errors
+        window.addEventListener('error', function(event) {
+          if (
+            event.message &&
+            (event.message.indexOf("reading 'startTime'") !== -1 ||
+             event.message.indexOf("reportAllChanges") !== -1)
+          ) {
+            event.preventDefault();
+            event.stopPropagation();
+            return true;
+          }
+        }, true);
+
         try {
           var saved = localStorage.getItem('eduflow_theme');
           var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');

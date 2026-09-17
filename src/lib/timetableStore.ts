@@ -366,7 +366,7 @@ export const timetableStore = {
     if (isSupabaseConfigured) {
       const { error } = await supabase.from('timetable_entries').upsert([{
         id: targetEntry.id,
-        college_id: targetEntry.college_id,
+        college_id: normalizeCollegeId(targetEntry.college_id),
         class_id: targetEntry.class_id || null,
         day: targetEntry.day,
         period: targetEntry.period,

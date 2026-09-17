@@ -30,178 +30,114 @@ import {
 import { useAcademicStore, normalizeCollegeId } from '../../lib/academicStore'
 import { useAuth } from '../../app/providers/AuthProvider'
 import { supabase, isSupabaseConfigured } from '../../lib/supabase'
+import {
+  CollegeSettingsService,
+  DEFAULT_COLLEGE_SETTINGS,
+  type CollegeSettingsData,
+} from '../../services/collegeSettingsService'
+
+function AcademicOverviewSection({ onNavigateToClasses }: { onNavigateToClasses: () => void }) {
+  const { classes, students, teachers } = useAcademicStore()
+
+  const academicSummary = useMemo(() => {
+    const totalClasses = classes.length
+    const totalStudents = students.length
+    const totalTeachers = teachers.length
+    const uniqueCourses = Array.from(new Set(classes.map((c) => c.course).filter(Boolean)))
+    const uniqueBranches = Array.from(new Set(classes.map((c) => c.branch).filter(Boolean)))
+    return {
+      totalClasses,
+      totalStudents,
+      totalTeachers,
+      coursesCount: uniqueCourses.length || 3,
+      branchesCount: uniqueBranches.length || 9,
+    }
+  }, [classes, students, teachers])
+
+  return (
+    <div className="bg-surface rounded-[var(--radius-card)] border border-border p-6 shadow-[var(--shadow-soft)] space-y-4">
+      <h3 className="text-base font-bold text-ink-900 border-b border-border pb-3 flex items-center justify-between">
+        <span className="flex items-center gap-2">
+          <Layers className="h-5 w-5 text-brand-600" /> Section C — Academic Structure Overview (Shortcut)
+        </span>
+        <Button variant="ghost" size="sm" onClick={onNavigateToClasses}>
+          <ExternalLink className="h-4 w-4" /> Manage Academic Structure
+        </Button>
+      </h3>
+
+      <p className="text-sm text-ink-600">
+        Read-only summary of configured courses, branches, and class sections for this college. Click the button above to edit or add new classes.
+      </p>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+        <div className="bg-surface-hover border border-border rounded-lg p-3 text-center">
+          <p className="text-2xl font-bold text-brand-600">{academicSummary.coursesCount}</p>
+          <p className="text-xs text-ink-400 font-medium mt-1">Courses (B.Tech, Diploma, MBA)</p>
+        </div>
+        <div className="bg-surface-hover border border-border rounded-lg p-3 text-center">
+          <p className="text-2xl font-bold text-brand-600">{academicSummary.branchesCount}</p>
+          <p className="text-xs text-ink-400 font-medium mt-1">Specialized Branches</p>
+        </div>
+        <div className="bg-surface-hover border border-border rounded-lg p-3 text-center">
+          <p className="text-2xl font-bold text-brand-600">{academicSummary.totalClasses}</p>
+          <p className="text-xs text-ink-400 font-medium mt-1">Configured Classes</p>
+        </div>
+        <div className="bg-surface-hover border border-border rounded-lg p-3 text-center">
+          <p className="text-2xl font-bold text-brand-600">{academicSummary.totalStudents}</p>
+          <p className="text-xs text-ink-400 font-medium mt-1">Enrolled Students</p>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export function SettingsPage() {
   const navigate = useNavigate()
   const { toast } = useToast()
   const { user } = useAuth()
-  const { classes, students, teachers } = useAcademicStore()
 
   const rawUserCollege = user?.college_id || user?.school_id || '13695a78-0105-4bde-bc85-d664bb66637e'
-  const userCollegeId = normalizeCollegeId(rawUserCollege) || '13695a78-0105-4bde-bc85-d664bb66637e'
+  const userCollegeId = useMemo(
+    () => normalizeCollegeId(rawUserCollege) || '13695a78-0105-4bde-bc85-d664bb66637e',
+    [rawUserCollege]
+  )
 
   const [activeTab, setActiveTab] = useState('profile')
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(() => !CollegeSettingsService.getCachedSettings(userCollegeId))
   const [saving, setSaving] = useState(false)
   const [showResetModal, setShowResetModal] = useState(false)
   const [confirmResetText, setConfirmResetText] = useState('')
 
   // Settings State matching Sections A to H
-  const [collegeData, setCollegeData] = useState({
-    // SECTION A: College Profile
-    name: 'R.R. Institute of Modern Technology',
-    code: '0361',
-    logo_url: '',
-    address_line1: 'NH-24, Sitapur Road',
-    address_line2: 'Bakamau, Uttar Pradesh',
-    city: 'Lucknow',
-    state: 'Uttar Pradesh',
-    pincode: '226201',
-    phone: '+91 7238087084',
-    alternate_phone: '+91 522 273849',
-    email: 'info@rrimt.ac.in',
-    website: 'https://rrimt.ac.in',
-    established_year: '2008',
-    affiliated_university: 'Dr. A.P.J. Abdul Kalam Technical University (AKTU) / BTEUP',
-    college_type: 'Engineering',
+  const [collegeData, setCollegeData] = useState<CollegeSettingsData>(
+    () => CollegeSettingsService.getCachedSettings(userCollegeId) || DEFAULT_COLLEGE_SETTINGS
+  )
 
-    // SECTION B: Academic Session
-    academic_session: '2025-2026',
-    session_start_date: '2025-07-15',
-    session_end_date: '2026-06-30',
-    active_semester: 'Odd' as 'Odd' | 'Even',
-    previous_sessions: ['2024-2025', '2023-2024', '2022-2023'],
-
-    // SECTION D: Grading & Evaluation
-    grading_system: 'Percentage' as 'Percentage' | 'CGPA' | 'Letter Grade',
-    passing_criteria: 40,
-    grade_boundaries: {
-      'A+': 90,
-      'A': 80,
-      'B+': 70,
-      'B': 60,
-      'C': 50,
-      'D': 40,
-      'F': 0,
-    },
-    allowed_exam_types: ['Sessional Exam', 'PUT', 'Test', 'Practical', 'Mid Term', 'End Semester'],
-
-    // SECTION E: Attendance Rules
-    min_attendance_percentage: 75,
-    attendance_calc_method: 'per_lecture' as 'per_subject' | 'per_day' | 'per_lecture',
-    late_mark_policy: 'Half' as 'Present' | 'Absent' | 'Half',
-
-    // SECTION F: Fee Configuration
-    currency: 'INR (₹)',
-    fee_cycle: 'Semester' as 'Yearly' | 'Semester' | 'Monthly',
-    late_fee_enabled: true,
-    late_fee_amount: 50,
-    late_fee_grace_days: 7,
-    receipt_prefix: 'RRIMT-2025-',
-    enabled_payment_modes: ['Cash', 'UPI', 'Bank Transfer', 'Online Gateway'],
-
-    // SECTION G: Notice Preferences
-    default_notice_target: 'All Students & Staff',
-    auto_notice_exam: true,
-    auto_notice_fee: true,
-    auto_notice_holiday: true,
-    show_notice_on_login: true,
-
-    // SECTION H: Report Branding
-    report_header_logo: '',
-    report_header_name: 'R.R. INSTITUTE OF MODERN TECHNOLOGY',
-    report_tagline: 'Approved by AICTE, New Delhi & Affiliated to AKTU / BTEUP',
-    report_footer_text: 'NH-24, Sitapur Road, Lucknow, Uttar Pradesh - 226201 | Phone: +91 7238087084',
-  })
-
-  // Load persistent settings from Supabase DB on mount
+  // Load persistent settings from Supabase DB on mount / college change
   useEffect(() => {
     let isMounted = true
 
-    const fetchCollegeSettings = async () => {
-      if (!isSupabaseConfigured) {
-        setLoading(false)
-        return
-      }
-
-      try {
-        setLoading(true)
-        const { data, error } = await supabase
-          .from('colleges')
-          .select('*')
-          .eq('id', userCollegeId)
-          .maybeSingle()
-
-        if (error) {
-          console.warn('Supabase fetch college settings notice:', error.message)
-        }
-
-        if (data && isMounted) {
-          const s = data.settings || {}
-          setCollegeData((prev) => ({
-            ...prev,
-            name: data.name || prev.name,
-            code: data.code || prev.code,
-            logo_url: data.logo_url || prev.logo_url,
-            address_line1: data.address_line1 || data.address || prev.address_line1,
-            address_line2: data.address_line2 || prev.address_line2,
-            city: data.city || prev.city,
-            state: data.state || prev.state,
-            pincode: data.pincode || prev.pincode,
-            phone: data.phone || prev.phone,
-            alternate_phone: data.alternate_phone || prev.alternate_phone,
-            email: data.email || prev.email,
-            website: data.website || prev.website,
-            established_year: data.established_year || prev.established_year,
-            affiliated_university: data.affiliated_university || prev.affiliated_university,
-            college_type: data.college_type || prev.college_type,
-
-            academic_session: s.academic_session || prev.academic_session,
-            session_start_date: s.session_start_date || prev.session_start_date,
-            session_end_date: s.session_end_date || prev.session_end_date,
-            active_semester: s.active_semester || prev.active_semester,
-            previous_sessions: s.previous_sessions || prev.previous_sessions,
-
-            grading_system: s.grading_system || prev.grading_system,
-            passing_criteria: s.passing_criteria ?? prev.passing_criteria,
-            grade_boundaries: s.grade_boundaries || prev.grade_boundaries,
-            allowed_exam_types: s.allowed_exam_types || prev.allowed_exam_types,
-
-            min_attendance_percentage: s.min_attendance_percentage ?? prev.min_attendance_percentage,
-            attendance_calc_method: s.attendance_calc_method || prev.attendance_calc_method,
-            late_mark_policy: s.late_mark_policy || prev.late_mark_policy,
-
-            currency: s.currency || prev.currency,
-            fee_cycle: s.fee_cycle || prev.fee_cycle,
-            late_fee_enabled: s.late_fee_enabled ?? prev.late_fee_enabled,
-            late_fee_amount: s.late_fee_amount ?? prev.late_fee_amount,
-            late_fee_grace_days: s.late_fee_grace_days ?? prev.late_fee_grace_days,
-            receipt_prefix: s.receipt_prefix || prev.receipt_prefix,
-            enabled_payment_modes: s.enabled_payment_modes || prev.enabled_payment_modes,
-
-            default_notice_target: s.default_notice_target || prev.default_notice_target,
-            auto_notice_exam: s.auto_notice_exam ?? prev.auto_notice_exam,
-            auto_notice_fee: s.auto_notice_fee ?? prev.auto_notice_fee,
-            auto_notice_holiday: s.auto_notice_holiday ?? prev.auto_notice_holiday,
-            show_notice_on_login: s.show_notice_on_login ?? prev.show_notice_on_login,
-
-            report_header_logo: s.report_header_logo || data.logo_url || prev.report_header_logo,
-            report_header_name: s.report_header_name || data.name || prev.report_header_name,
-            report_tagline: s.report_tagline || prev.report_tagline,
-            report_footer_text: s.report_footer_text || prev.report_footer_text,
-          }))
-        }
-      } catch (err: any) {
-        console.error('Failed to load college settings:', err)
-      } finally {
-        if (isMounted) setLoading(false)
-      }
+    const cached = CollegeSettingsService.getCachedSettings(userCollegeId)
+    if (cached) {
+      setCollegeData(cached)
+      setLoading(false)
+    } else {
+      setLoading(true)
     }
 
-    fetchCollegeSettings()
+    CollegeSettingsService.fetchCollegeSettings(userCollegeId).then((freshData) => {
+      if (isMounted && freshData) {
+        setCollegeData(freshData)
+        setLoading(false)
+      }
+    })
+
+    return () => {
+      isMounted = false
+    }
   }, [userCollegeId])
 
-  // Save all settings to Supabase Postgres DB
+  // Save all settings to Supabase Postgres DB & local cache
   const handleSaveAll = async () => {
     setSaving(true)
     try {
@@ -269,6 +205,8 @@ export function SettingsPage() {
           throw new Error(error.message)
         }
       }
+
+      CollegeSettingsService.setCachedSettings(userCollegeId, collegeData)
 
       toast({
         title: 'Settings Saved',
@@ -341,22 +279,6 @@ export function SettingsPage() {
       return { ...prev, enabled_payment_modes: updated }
     })
   }
-
-  // Academic Structure Summary Counts
-  const academicSummary = useMemo(() => {
-    const totalClasses = classes.length
-    const totalStudents = students.length
-    const totalTeachers = teachers.length
-    const uniqueCourses = Array.from(new Set(classes.map((c) => c.course).filter(Boolean)))
-    const uniqueBranches = Array.from(new Set(classes.map((c) => c.branch).filter(Boolean)))
-    return {
-      totalClasses,
-      totalStudents,
-      totalTeachers,
-      coursesCount: uniqueCourses.length || 3,
-      branchesCount: uniqueBranches.length || 9,
-    }
-  }, [classes, students, teachers])
 
   // Handle Academic Session Reset (Danger Zone)
   const handleResetSession = () => {
@@ -593,39 +515,7 @@ export function SettingsPage() {
               </div>
 
               {/* SECTION C: Academic Structure Shortcut */}
-              <div className="bg-surface rounded-[var(--radius-card)] border border-border p-6 shadow-[var(--shadow-soft)] space-y-4">
-                <h3 className="text-base font-bold text-ink-900 border-b border-border pb-3 flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <Layers className="h-5 w-5 text-brand-600" /> Section C — Academic Structure Overview (Shortcut)
-                  </span>
-                  <Button variant="ghost" size="sm" onClick={() => navigate('/classes')}>
-                    <ExternalLink className="h-4 w-4" /> Manage Academic Structure
-                  </Button>
-                </h3>
-
-                <p className="text-sm text-ink-600">
-                  Read-only summary of configured courses, branches, and class sections for this college. Click the button above to edit or add new classes.
-                </p>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
-                  <div className="bg-surface-hover border border-border rounded-lg p-3 text-center">
-                    <p className="text-2xl font-bold text-brand-600">{academicSummary.coursesCount}</p>
-                    <p className="text-xs text-ink-400 font-medium mt-1">Courses (B.Tech, Diploma, MBA)</p>
-                  </div>
-                  <div className="bg-surface-hover border border-border rounded-lg p-3 text-center">
-                    <p className="text-2xl font-bold text-brand-600">{academicSummary.branchesCount}</p>
-                    <p className="text-xs text-ink-400 font-medium mt-1">Specialized Branches</p>
-                  </div>
-                  <div className="bg-surface-hover border border-border rounded-lg p-3 text-center">
-                    <p className="text-2xl font-bold text-brand-600">{academicSummary.totalClasses}</p>
-                    <p className="text-xs text-ink-400 font-medium mt-1">Configured Classes</p>
-                  </div>
-                  <div className="bg-surface-hover border border-border rounded-lg p-3 text-center">
-                    <p className="text-2xl font-bold text-brand-600">{academicSummary.totalStudents}</p>
-                    <p className="text-xs text-ink-400 font-medium mt-1">Enrolled Students</p>
-                  </div>
-                </div>
-              </div>
+              <AcademicOverviewSection onNavigateToClasses={() => navigate('/admin/classes')} />
             </div>
           )}
 
@@ -959,7 +849,7 @@ export function SettingsPage() {
                 </p>
 
                 <div className="flex flex-wrap gap-3 pt-2">
-                  <Button variant="ghost" onClick={() => navigate('/reports')}>
+                  <Button variant="ghost" onClick={() => navigate('/admin/reports')}>
                     <ExternalLink className="h-4 w-4" /> Export College Data (Global Reports)
                   </Button>
                 </div>

@@ -239,6 +239,7 @@ export interface StudentRecord {
   parent_email: string
   college_id?: string
   profile_id?: string
+  class_id?: string
 }
 
 export interface SemesterItem {
@@ -457,7 +458,8 @@ export function normalizeCollegeId(input?: string | null): string {
   const trimmed = input.trim()
   if (trimmed === '151' || trimmed === 'COL-151') return 'ea318ebf-893e-410c-a925-ac1d4dc986eb'
   if (trimmed === '0361' || trimmed === 'COL001' || trimmed === 'COL-0361' || trimmed === 'PLATFORM_ALL') return '13695a78-0105-4bde-bc85-d664bb66637e'
-  return trimmed
+  if (isValidUUID(trimmed)) return trimmed
+  return '13695a78-0105-4bde-bc85-d664bb66637e'
 }
 
 export const isValidUUID = (str?: string) => Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str))
@@ -711,6 +713,7 @@ export async function syncWithSupabase(userCollegeId?: string, isSuperAdmin?: bo
           section: s.section || 'Section A',
           class_name: s.class_name || `${s.course} ${s.branch} - ${s.year} - ${s.section}`,
           college_id: s.college_id,
+          class_id: s.class_id || '',
         }))
         saveLocalStorage('eduth_students_v3', studentsState)
       }
@@ -801,6 +804,8 @@ export const academicStore = {
         semester: targetStudent.semester,
         section: targetStudent.section,
         class_name: targetStudent.class_name,
+        student_id: targetStudent.student_id,
+        class_id: targetStudent.class_id,
         status: 'active'
       }])
 

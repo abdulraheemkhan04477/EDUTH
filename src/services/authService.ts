@@ -512,6 +512,19 @@ export class AuthService {
     try { resetNoticeStore() } catch {}
     try { resetExamStore() } catch {}
     try { resetStudyMaterialStore() } catch {}
+
+    if (typeof document !== 'undefined' && document.cookie) {
+      try {
+        const cookies = document.cookie.split(';')
+        for (const c of cookies) {
+          const name = c.split('=')[0].trim()
+          if (name.startsWith('sb-') || name.includes('auth') || name.includes('token') || name.includes('session')) {
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`
+          }
+        }
+      } catch {}
+    }
   }
 
   /**
@@ -622,9 +635,9 @@ export class AuthService {
           { data: student },
           { data: parent },
         ] = await Promise.all([
-          supabase.from('teachers').select('id, college_id, teacher_id, name, email, phone').eq('email', userEmail).maybeSingle(),
-          supabase.from('students').select('id, college_id, student_id, name, email, phone').eq('email', userEmail).maybeSingle(),
-          supabase.from('parents').select('id, college_id, student_id, name, email, phone').eq('email', userEmail).maybeSingle(),
+          supabase.from('teachers').select('*').eq('email', userEmail).maybeSingle(),
+          supabase.from('students').select('*').eq('email', userEmail).maybeSingle(),
+          supabase.from('parents').select('*').eq('email', userEmail).maybeSingle(),
         ])
 
         if (teacher) {
@@ -780,26 +793,149 @@ export class AuthService {
       }
     }
 
-    return {
-      user: {
-        id: assignedId,
-        college_id: normCollegeId,
-        school_id: normCollegeId,
-        role: 'teacher',
-        name: teacherData.name,
-        email: cleanEmail,
-        teacher_id: teacherData.teacher_id,
-        status: 'active',
-        created_at: new Date().toISOString()
-      } as Profile
-    }
+    const teacherProfile: Profile = {
+      id: assignedId,
+      college_id: normCollegeId,
+      school_id: normCollegeId,
+      role: 'teacher',
+      name: teacherData.name,
+      email: cleanEmail,
+      teacher_id: teacherData.teacher_id,
+      status: 'active',
+      created_at: new Date().toISOString()
+    } as Profile
+
+    saveLocalProfile(teacherProfile)
+    return { user: teacherProfile }
   }
 
   static async createStudentAccount(studentData: any): Promise<{ user?: Profile; error?: string }> {
-    return { user: { id: `s_${Date.now()}`, role: 'student', name: studentData.name, email: studentData.email, status: 'active', created_at: new Date().toISOString() } as Profile }
+    const normCollegeId = normalizeCollegeId(studentData.college_id) || studentData.college_id || 'ea318ebf-893e-410c-a925-ac1d4dc986eb'
+    const cleanEmail = (studentData.email || '').trim().toLowerCase()
+    let assignedId = studentData.id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `s_${Date.now()}`)
+
+    if (isSupabaseConfigured && cleanEmail) {
+      if (studentData.password) {
+        try {
+          const { data: authData, error: authErr } = await supabase.auth.signUp({
+            email: cleanEmail,
+            password: studentData.password,
+            options: {
+              data: {
+                name: studentData.name,
+                role: 'student',
+                college_id: normCollegeId,
+                student_id: studentData.student_id,
+              },
+            },
+          })
+          if (authErr && !authErr.message.includes('User already registered')) {
+            console.warn('Supabase Auth signUp notice:', authErr.message)
+          }
+          if (authData?.user?.id) {
+            assignedId = authData.user.id
+          }
+        } catch (err) {
+          console.warn('Supabase Auth signUp exception:', err)
+        }
+      }
+
+      try {
+        await supabase.from('profiles').upsert([{
+          id: assignedId,
+          college_id: normCollegeId,
+          school_id: normCollegeId,
+          role: 'student',
+          name: studentData.name,
+          email: cleanEmail,
+          phone: studentData.phone || null,
+          student_id: studentData.student_id,
+          status: 'active',
+          created_at: new Date().toISOString()
+        }])
+      } catch (err) {
+        console.warn('Profiles upsert for student notice:', err)
+      }
+    }
+
+    const studentProfile: Profile = {
+      id: assignedId,
+      college_id: normCollegeId,
+      school_id: normCollegeId,
+      role: 'student',
+      name: studentData.name,
+      email: cleanEmail,
+      student_id: studentData.student_id,
+      status: 'active',
+      created_at: new Date().toISOString()
+    } as Profile
+
+    saveLocalProfile(studentProfile)
+    return { user: studentProfile }
   }
 
   static async createParentAccount(parentData: any): Promise<{ user?: Profile; error?: string }> {
-    return { user: { id: `p_${Date.now()}`, role: 'parent', name: parentData.name, email: parentData.email, status: 'active', created_at: new Date().toISOString() } as Profile }
+    const normCollegeId = normalizeCollegeId(parentData.college_id) || parentData.college_id || 'ea318ebf-893e-410c-a925-ac1d4dc986eb'
+    const cleanEmail = (parentData.email || '').trim().toLowerCase()
+    let assignedId = parentData.id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `p_${Date.now()}`)
+
+    if (isSupabaseConfigured && cleanEmail) {
+      if (parentData.password) {
+        try {
+          const { data: authData, error: authErr } = await supabase.auth.signUp({
+            email: cleanEmail,
+            password: parentData.password,
+            options: {
+              data: {
+                name: parentData.name,
+                role: 'parent',
+                college_id: normCollegeId,
+                child_student_id: parentData.child_student_id,
+              },
+            },
+          })
+          if (authErr && !authErr.message.includes('User already registered')) {
+            console.warn('Supabase Auth signUp parent notice:', authErr.message)
+          }
+          if (authData?.user?.id) {
+            assignedId = authData.user.id
+          }
+        } catch (err) {
+          console.warn('Supabase Auth signUp parent notice:', err)
+        }
+      }
+
+      try {
+        await supabase.from('profiles').upsert([{
+          id: assignedId,
+          college_id: normCollegeId,
+          school_id: normCollegeId,
+          role: 'parent',
+          name: parentData.name,
+          email: cleanEmail,
+          phone: parentData.phone || null,
+          child_student_id: parentData.child_student_id,
+          status: 'active',
+          created_at: new Date().toISOString()
+        }])
+      } catch (err) {
+        console.warn('Profiles upsert for parent notice:', err)
+      }
+    }
+
+    const parentProfile: Profile = {
+      id: assignedId,
+      college_id: normCollegeId,
+      school_id: normCollegeId,
+      role: 'parent',
+      name: parentData.name,
+      email: cleanEmail,
+      child_student_id: parentData.child_student_id,
+      status: 'active',
+      created_at: new Date().toISOString()
+    } as Profile
+
+    saveLocalProfile(parentProfile)
+    return { user: parentProfile }
   }
 }

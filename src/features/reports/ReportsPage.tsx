@@ -10,7 +10,6 @@ import { exportToCSV, exportToPDF, exportExamResultsPDF } from '../../lib/export
 import { useAcademicStore, COURSES, BRANCHES_BY_COURSE, YEARS, YEARS_BY_COURSE, SEMESTERS_BY_COURSE, getTeacherForUser, isBranchMatch, isSemesterMatch } from '../../lib/academicStore'
 import { useExamStore } from '../../lib/examStore'
 import { useFeeStore } from '../../lib/feeStore'
-import { useAssignmentStore } from '../../lib/assignmentStore'
 import { useStudyMaterialStore } from '../../lib/studyMaterialStore'
 import { useTnpStore } from '../../lib/tnpStore'
 import { useAuth } from '../../app/providers/AuthProvider'
@@ -57,7 +56,6 @@ export function ReportsPage() {
   const { students, teachers, classes, getAttendance } = useAcademicStore()
   const { results } = useExamStore()
   const { studentFees } = useFeeStore()
-  const { assignments } = useAssignmentStore()
   const { materials } = useStudyMaterialStore()
   const { companies, drives, applications, placements, activities: _activities, adminMetrics: _adminMetrics } = useTnpStore()
 
@@ -136,7 +134,6 @@ export function ReportsPage() {
         { id: 'attendance', label: 'Attendance Report' },
         { id: 'exams', label: 'Exam & Result Report' },
         { id: 'fee', label: 'Fee Report' },
-        { id: 'assignment', label: 'Assignment Report' },
         { id: 'study_material', label: 'Study Material' },
       ]
     : [
@@ -145,7 +142,6 @@ export function ReportsPage() {
         { id: 'attendance', label: 'Attendance Report' },
         { id: 'exams', label: 'Exam & Result Report' },
         { id: 'fee', label: 'Fee Report' },
-        { id: 'assignment', label: 'Assignment Report' },
         { id: 'study_material', label: 'Study Material' },
         { id: 'tnp', label: 'TNP Report' },
       ]
@@ -416,27 +412,7 @@ export function ReportsPage() {
     })
   }, [studentFees, filterCourse, filterBranch, filterYear, filterSemester, filterSection, filterStatus, search])
 
-  // 6. FILTERED ASSIGNMENT REPORT DATA
-  const filteredAssignments = useMemo(() => {
-    let source = assignments
-    if (isStudent || isParent) {
-      if (!currentStudent) return []
-      source = assignments.filter(() => matchesAcademic({ course: currentStudent.course, branch: currentStudent.branch, semester: currentStudent.semester }))
-    } else if (isTeacher) {
-      source = assignments.filter((a) => isRecordInTeacherScope(a))
-    }
-
-    return source.filter((a) => {
-      if (!matchesAcademic(a)) return false
-      if (search) {
-        const q = search.toLowerCase()
-        if (!a.title.toLowerCase().includes(q) && !a.subject.toLowerCase().includes(q)) return false
-      }
-      return true
-    })
-  }, [assignments, currentStudent, isStudent, isParent, isTeacher, isRecordInTeacherScope, filterCourse, filterBranch, filterYear, filterSemester, filterSection, search])
-
-  // 7. FILTERED STUDY MATERIAL REPORT DATA
+  // 6. FILTERED STUDY MATERIAL REPORT DATA
   const filteredMaterials = useMemo(() => {
     let source = materials
     if (isStudent || isParent) {
@@ -456,7 +432,7 @@ export function ReportsPage() {
     })
   }, [materials, currentStudent, isStudent, isParent, filterCourse, filterBranch, filterSemester, search])
 
-  // 8. FILTERED TNP REPORT DATA
+  // 7. FILTERED TNP REPORT DATA
   const filteredTnpPlacements = useMemo(() => {
     let source = placements
     if (isTeacher) {
@@ -502,7 +478,6 @@ export function ReportsPage() {
     else if (activeTab === 'attendance') dataToExport = filteredAttendance
     else if (activeTab === 'exams') dataToExport = pivotedExamRows
     else if (activeTab === 'fee') dataToExport = filteredFees
-    else if (activeTab === 'assignment') dataToExport = filteredAssignments
     else if (activeTab === 'study_material') dataToExport = filteredMaterials
 
     exportToCSV(filename, dataToExport)
@@ -582,16 +557,6 @@ export function ReportsPage() {
         { key: 'status', header: 'Status' },
       ]
       dataToExport = filteredFees
-    } else if (activeTab === 'assignment') {
-      title = 'Academic Assignments Report'
-      columns = [
-        { key: 'title', header: 'Assignment Title' },
-        { key: 'subject', header: 'Subject' },
-        { key: 'course', header: 'Course' },
-        { key: 'branch', header: 'Branch' },
-        { key: 'due_date', header: 'Due Date' },
-      ]
-      dataToExport = filteredAssignments
     } else if (activeTab === 'study_material') {
       title = 'Study Materials & Resources Report'
       columns = [
@@ -902,34 +867,6 @@ export function ReportsPage() {
         </div>
       )}
 
-      {/* ==================== 6. ASSIGNMENT REPORT ==================== */}
-      {activeTab === 'assignment' && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard label="Active Course Assignments" value={filteredAssignments.length.toString()} icon={BookOpen} tone="brand" />
-            <StatCard label="Pending Due Date" value={filteredAssignments.filter((a) => new Date(a.due_date) >= new Date()).length.toString()} icon={Clock} tone="warning" />
-            <StatCard label="Total Submissions" value={filteredAssignments.reduce((sum, a) => sum + (a.submitted_count || 0), 0).toString()} icon={CheckCircle2} tone="success" />
-            <StatCard label="Target Courses" value={COURSES.length.toString()} icon={GraduationCap} tone="info" />
-          </div>
-          {filteredAssignments.length === 0 ? (
-            <EmptyState icon={BookOpen} title="No Assignments Found" description="No assignment records found for the selected filter scope." />
-          ) : (
-            <DataTable
-              columns={[
-                { key: 'title', header: 'Assignment Title', render: (r) => <div><span className="font-semibold text-ink-900 block">{r.title}</span><span className="text-xs text-ink-400">{r.description}</span></div> },
-                { key: 'subject', header: 'Subject', render: (r) => <span className="font-semibold text-brand-700">{r.subject}</span> },
-                { key: 'course', header: 'Course / Branch', render: (r) => `${r.course} • ${r.branch}` },
-                { key: 'semester', header: 'Semester / Section', render: (r) => `${r.semester} (${r.section || 'All'})` },
-                { key: 'due_date', header: 'Due Date', render: (r) => <span className="font-mono text-xs font-semibold text-ink-800">{r.due_date}</span> },
-                { key: 'teacher_name', header: 'Faculty', render: (r) => r.teacher_name },
-                { key: 'submissions', header: 'Submissions', render: (r) => <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 font-mono text-xs rounded-full">{r.submitted_count || 0} Submitted</span> },
-              ]}
-              rows={filteredAssignments}
-              keyExtractor={(r) => r.id}
-            />
-          )}
-        </div>
-      )}
 
       {/* ==================== 7. STUDY MATERIAL REPORT ==================== */}
       {activeTab === 'study_material' && (

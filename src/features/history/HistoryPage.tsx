@@ -25,6 +25,7 @@ import {
   ShieldAlert,
   Plus,
   Send,
+  Briefcase,
 } from 'lucide-react'
 import type { Column } from '../../components/ui/DataTable'
 import { useAuth } from '../../app/providers/AuthProvider'
@@ -40,6 +41,7 @@ import {
 import { useFeeStore } from '../../lib/feeStore'
 import { useExamStore } from '../../lib/examStore'
 import { useSuspensionStore, type SuspensionRecord } from '../../lib/suspensionStore'
+import { useTnpStore, type PlacementRecord } from '../../lib/tnpStore'
 import { exportToCSV } from '../../lib/exportUtils'
 import { formatCurrency } from '../../lib/formatCurrency'
 
@@ -102,6 +104,7 @@ export function HistoryPage() {
   const { studentFees } = useFeeStore()
   const { results, saveSingleResult } = useExamStore()
   const { suspensions, saveSuspension, deleteSuspension } = useSuspensionStore()
+  const { placements } = useTnpStore()
 
   // Active Category Tab
   const [activeCategory, setActiveCategory] = useState('attendance')
@@ -112,6 +115,7 @@ export function HistoryPage() {
     { id: 'fees', label: 'Fee History' },
     { id: 'exams', label: 'Exam History' },
     { id: 'suspensions', label: 'Suspension History' },
+    { id: 'tnp', label: 'TNP History' },
   ]
 
   const currentTeacher = useMemo(() => {
@@ -623,6 +627,44 @@ export function HistoryPage() {
     }
   }
 
+  // ==================== 5. TNP HISTORY DATA & READ-ONLY VIEW ====================
+  const [viewTnpModal, setViewTnpModal] = useState<PlacementRecord | null>(null)
+
+  const filteredTnpHistory = useMemo(() => {
+    return placements.filter((p) => {
+      if (isStudent || isParent) {
+        if (!targetStudent) return false
+        if (
+          p.student_id !== targetStudent.id &&
+          p.student_id !== targetStudent.student_id &&
+          p.roll_no !== targetStudent.roll_no
+        )
+          return false
+      } else if (role === 'teacher' && currentTeacher) {
+        if (
+          !checkTeacherPermission(currentTeacher, {
+            course: p.course,
+            branch: p.branch,
+            year: p.year,
+          })
+        )
+          return false
+      }
+      if (courseFilter && p.course !== courseFilter) return false
+      if (branchFilter && !isBranchMatch(p.branch, branchFilter)) return false
+      if (yearFilter && p.year !== yearFilter) return false
+      if (statusFilter && p.status !== statusFilter) return false
+
+      if (search) {
+        const q = search.toLowerCase()
+        const matchStudent = (p.student_name || '').toLowerCase().includes(q) || (p.roll_no || '').toLowerCase().includes(q)
+        const matchCompany = (p.company_name || '').toLowerCase().includes(q) || (p.job_role || '').toLowerCase().includes(q) || (p.drive_name || '').toLowerCase().includes(q)
+        if (!matchStudent && !matchCompany) return false
+      }
+      return true
+    })
+  }, [placements, isStudent, isParent, role, currentTeacher, targetStudent, courseFilter, branchFilter, yearFilter, statusFilter, search])
+
   // ===== CSV EXPORT HANDLER =====
   const handleExportHistory = () => {
     if (activeCategory === 'attendance') {
@@ -645,6 +687,8 @@ export function HistoryPage() {
       exportToCSV('Exam_Result_History_Export', filteredExamHistory)
     } else if (activeCategory === 'suspensions') {
       exportToCSV('Disciplinary_Suspension_History_Export', filteredSuspensions)
+    } else if (activeCategory === 'tnp') {
+      exportToCSV('TNP_Placement_History_Export', filteredTnpHistory)
     }
     toast({ type: 'info', title: `Exported ${activeCategory.toUpperCase()} History CSV` })
   }
@@ -842,7 +886,7 @@ export function HistoryPage() {
             />
           )}
 
-          {(activeCategory === 'fees' || activeCategory === 'exams' || activeCategory === 'suspensions') && (
+          {(activeCategory === 'fees' || activeCategory === 'exams' || activeCategory === 'suspensions' || activeCategory === 'tnp') && (
             <Select
               options={[
                 { value: '', label: 'All Statuses' },
@@ -854,6 +898,10 @@ export function HistoryPage() {
                 { value: 'Active', label: 'Active Suspension' },
                 { value: 'Completed', label: 'Completed' },
                 { value: 'Cancelled', label: 'Cancelled' },
+                { value: 'Offered', label: 'Offered' },
+                { value: 'Confirmed', label: 'Confirmed' },
+                { value: 'Joined', label: 'Joined' },
+                { value: 'Declined', label: 'Declined' },
               ]}
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -1135,6 +1183,99 @@ export function HistoryPage() {
                 icon={ShieldAlert}
                 title="No student suspension history records found"
                 description="Disciplinary suspension records created by college administration will appear here."
+              />
+            }
+          />
+        </div>
+      )}
+
+      {/* ==================== 5. TNP HISTORY TAB ==================== */}
+      {activeCategory === 'tnp' && (
+        <div className="bg-surface rounded-[var(--radius-card)] border border-border shadow-[var(--shadow-soft)] overflow-hidden">
+          <DataTable
+            columns={[
+              {
+                key: 'student',
+                header: 'Student Name',
+                render: (r) => (
+                  <div>
+                    <span className="font-semibold text-ink-900 block">{r.student_name}</span>
+                    <span className="text-xs text-ink-400 font-mono">{r.roll_no}</span>
+                  </div>
+                ),
+              },
+              {
+                key: 'academic',
+                header: 'Course & Branch',
+                render: (r) => `${r.course} • ${r.branch} (${r.year})`,
+              },
+              {
+                key: 'company',
+                header: 'Company & Drive',
+                render: (r) => (
+                  <div>
+                    <span className="font-bold text-brand-700 block">{r.company_name}</span>
+                    <span className="text-xs text-ink-500 font-medium">{r.drive_name || 'Placement Drive'}</span>
+                  </div>
+                ),
+              },
+              {
+                key: 'role',
+                header: 'Job Role & Package',
+                render: (r) => (
+                  <div>
+                    <span className="font-semibold text-ink-900 block">{r.job_role}</span>
+                    <span className="font-mono text-xs font-bold text-emerald-600">{r.package_amount || 'N/A'}</span>
+                  </div>
+                ),
+              },
+              {
+                key: 'dates',
+                header: 'Placement / Joining Date',
+                render: (r) => (
+                  <div>
+                    <span className="font-mono text-xs font-medium text-ink-800 block">Selected: {r.selection_date}</span>
+                    {r.joining_date && <span className="font-mono text-[11px] text-ink-400">Joining: {r.joining_date}</span>}
+                  </div>
+                ),
+              },
+              {
+                key: 'type',
+                header: 'Type',
+                render: (r) => <span className="px-2.5 py-0.5 bg-brand-100/70 text-brand-800 text-xs font-semibold rounded-full">{r.placement_type || 'Full Time'}</span>,
+              },
+              {
+                key: 'status',
+                header: 'Placement Status',
+                render: (r) => (
+                  <StatusPill
+                    status={r.status === 'Confirmed' || r.status === 'Joined' ? 'success' : r.status === 'Offered' ? 'warning' : 'neutral'}
+                    label={(r.status || 'Offered').toUpperCase()}
+                  />
+                ),
+              },
+              {
+                key: 'actions',
+                header: 'Details',
+                align: 'right',
+                render: (r) => (
+                  <button
+                    onClick={() => setViewTnpModal(r)}
+                    className="p-1.5 rounded hover:bg-canvas text-ink-400 hover:text-ink-900 transition-colors cursor-pointer"
+                    title="View Placement Details"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </button>
+                ),
+              },
+            ]}
+            rows={filteredTnpHistory.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+            keyExtractor={(r) => r.id}
+            emptyState={
+              <EmptyState
+                icon={Briefcase}
+                title="No TNP placement history records found"
+                description="Confirmed placement records recorded in Training & Placement will appear here."
               />
             }
           />
@@ -1585,6 +1726,40 @@ export function HistoryPage() {
           <p className="text-sm text-ink-800">
             Are you sure you want to delete the suspension record for <strong>{deleteSuspensionModal.student_name} ({deleteSuspensionModal.roll_no})</strong>?
           </p>
+        )}
+      </Modal>
+
+      {/* ==================== VIEW TNP PLACEMENT MODAL (READ ONLY) ==================== */}
+      <Modal
+        isOpen={!!viewTnpModal}
+        onClose={() => setViewTnpModal(null)}
+        title="Historical Placement Record Details"
+        footer={<Button variant="ghost" onClick={() => setViewTnpModal(null)}>Close</Button>}
+      >
+        {viewTnpModal && (
+          <div className="space-y-4 text-xs">
+            <div className="p-4 bg-canvas border border-border rounded-xl space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-ink-900 text-sm">{viewTnpModal.student_name}</span>
+                <StatusPill
+                  status={viewTnpModal.status === 'Confirmed' || viewTnpModal.status === 'Joined' ? 'success' : viewTnpModal.status === 'Offered' ? 'warning' : 'neutral'}
+                  label={(viewTnpModal.status || 'Offered').toUpperCase()}
+                />
+              </div>
+              <div className="text-ink-400 font-mono">Roll No: {viewTnpModal.roll_no} • {viewTnpModal.course} ({viewTnpModal.branch}, {viewTnpModal.year})</div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 p-3 bg-surface border border-border rounded-xl">
+              <div>Company Name: <strong className="text-brand-700 font-bold">{viewTnpModal.company_name}</strong></div>
+              <div>Drive Name: <strong>{viewTnpModal.drive_name || 'Placement Drive'}</strong></div>
+              <div>Job Role: <strong className="text-ink-900 font-semibold">{viewTnpModal.job_role}</strong></div>
+              <div>Package (CTC): <strong className="font-mono text-emerald-600 font-bold">{viewTnpModal.package_amount}</strong></div>
+              <div>Placement Type: <strong>{viewTnpModal.placement_type || 'Full Time'}</strong></div>
+              <div>Job Location: <strong>{viewTnpModal.location || 'N/A'}</strong></div>
+              <div>Selection Date: <strong className="font-mono">{viewTnpModal.selection_date}</strong></div>
+              {viewTnpModal.joining_date && <div>Joining Date: <strong className="font-mono">{viewTnpModal.joining_date}</strong></div>}
+            </div>
+          </div>
         )}
       </Modal>
     </div>

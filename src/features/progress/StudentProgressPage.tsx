@@ -3,7 +3,7 @@ import { StatCard, Select, DataTable, StatusPill, EmptyState } from '../../compo
 import { TrendingUp, Target, Award, BookOpen, User, CheckCircle, AlertCircle } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { useAuth } from '../../app/providers/AuthProvider'
-import { useAcademicStore, COURSES, BRANCHES_BY_COURSE, SEMESTERS_BY_YEAR_COURSE, YEARS, YEARS_BY_COURSE, getTeacherForUser, isBranchMatch, isSemesterMatch, normalizeCollegeId } from '../../lib/academicStore'
+import { useAcademicStore, COURSES, BRANCHES_BY_COURSE, SEMESTERS_BY_YEAR_COURSE, YEARS, YEARS_BY_COURSE, getTeacherForUser, isBranchMatch, isSemesterMatch, normalizeCollegeId, isValidUUID } from '../../lib/academicStore'
 import { useExamStore } from '../../lib/examStore'
 import { useSuspensionStore } from '../../lib/suspensionStore'
 import { supabase, isSupabaseConfigured } from '../../lib/supabase'
@@ -86,13 +86,18 @@ export function StudentProgressPage() {
       try {
         if (isSupabaseConfigured) {
           const normCol = normalizeCollegeId(userCollegeId) || userCollegeId
-          const collegeIds = Array.from(new Set([userCollegeId, normCol, '13695a78-0105-4bde-bc85-d664bb66637e'].filter(Boolean)))
+          const collegeIds = Array.from(new Set([userCollegeId, normCol, '13695a78-0105-4bde-bc85-d664bb66637e'].filter(id => Boolean(id) && isValidUUID(id))))
 
-          // Targeted select query - only needed columns and course filter directly in DB
+          // Targeted select query - select * to ensure all schema columns match
           let query = supabase
             .from('students')
-            .select('id, student_id, name, roll_no, course, branch, year, semester, section, college_id')
-            .in('college_id', collegeIds)
+            .select('*')
+
+          if (collegeIds.length === 1) {
+            query = query.eq('college_id', collegeIds[0])
+          } else if (collegeIds.length > 1) {
+            query = query.in('college_id', collegeIds)
+          }
 
           if (filterCourse) {
             query = query.eq('course', filterCourse)
@@ -212,13 +217,18 @@ export function StudentProgressPage() {
       try {
         if (isSupabaseConfigured) {
           const normCol = normalizeCollegeId(userCollegeId) || userCollegeId
-          const collegeIds = Array.from(new Set([userCollegeId, normCol, '13695a78-0105-4bde-bc85-d664bb66637e'].filter(Boolean)))
+          const collegeIds = Array.from(new Set([userCollegeId, normCol, '13695a78-0105-4bde-bc85-d664bb66637e'].filter(id => Boolean(id) && isValidUUID(id))))
 
           // Fetch Exams for student's course & college
           let examsQuery = supabase
             .from('exams')
-            .select('id, title, type, course, branch, year, semester, section, status, date, subject')
-            .in('college_id', collegeIds)
+            .select('*')
+
+          if (collegeIds.length === 1) {
+            examsQuery = examsQuery.eq('college_id', collegeIds[0])
+          } else if (collegeIds.length > 1) {
+            examsQuery = examsQuery.in('college_id', collegeIds)
+          }
 
           if (currentStudent.course) {
             examsQuery = examsQuery.eq('course', currentStudent.course)
@@ -227,7 +237,7 @@ export function StudentProgressPage() {
           // Fetch Results for student's identifiers
           let resQuery = supabase
             .from('results')
-            .select('id, exam_id, exam_subject_id, subject, exam_subject_name, obtained_marks, marks, max_marks, passing_marks, status, semester, is_published, published, student_id, roll_no')
+            .select('*')
             .in('student_id', studentIdsToMatch)
 
           const [examsRes, resultsRes] = await Promise.all([examsQuery, resQuery])

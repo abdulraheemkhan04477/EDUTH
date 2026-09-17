@@ -1,14 +1,15 @@
-import { type InputHTMLAttributes, forwardRef } from 'react'
+import { type InputHTMLAttributes, type ReactNode, forwardRef } from 'react'
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  icon?: React.ReactNode
+  icon?: ReactNode
   error?: boolean
+  containerClassName?: string
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ icon, error, className = '', ...props }, ref) => {
+  ({ icon, error, className = '', containerClassName = '', ...props }, ref) => {
     return (
-      <div className="relative">
+      <div className={`relative w-full ${containerClassName}`}>
         {icon && (
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none">
             {icon}
@@ -27,3 +28,4 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 )
 
 Input.displayName = 'Input'
+

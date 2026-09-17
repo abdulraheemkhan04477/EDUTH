@@ -13,6 +13,7 @@ import {
   academicStore,
   isBranchMatch,
   getAssignedClassRecordsForTeacher,
+  normalizeCollegeId,
 } from '../../lib/academicStore'
 import {
   useTimetableStore,
@@ -673,8 +674,15 @@ export function TimetablePage() {
         setFormSubject('Digital Communication')
         setFormSubjectCode('BEC 601')
       }
-      setFormTeacherId(teachers[0]?.teacher_id || teachers[0]?.id || '')
-      setFormTeacherName(teachers[0]?.name || 'Dr. Rahul Sharma')
+      const defaultTeacherId = isTeacher
+        ? (currentTeacher?.teacher_id || currentTeacher?.id || user?.teacher_id || user?.id || teachers[0]?.teacher_id || teachers[0]?.id || '')
+        : (teachers[0]?.teacher_id || teachers[0]?.id || '')
+      const defaultTeacherName = isTeacher
+        ? (currentTeacher?.name || user?.name || teachers[0]?.name || 'Dr. Rahul Sharma')
+        : (teachers[0]?.name || 'Dr. Rahul Sharma')
+
+      setFormTeacherId(defaultTeacherId)
+      setFormTeacherName(defaultTeacherName)
       setFormRoomNo(displayRoomNo)
       setFormEffectiveFrom('2026-02-02')
     }
@@ -707,7 +715,7 @@ export function TimetablePage() {
     const payload: Omit<TimetablePeriodEntry, 'created_at' | 'id'> & { id?: string } = {
       id: editingEntry?.id,
       class_id: currentClassRecord?.id,
-      college_id: editingEntry?.college_id || user?.college_id || user?.school_id || '13695a78-0105-4bde-bc85-d664bb66637e',
+      college_id: normalizeCollegeId(editingEntry?.college_id || user?.college_id || user?.school_id || '13695a78-0105-4bde-bc85-d664bb66637e'),
       course: filterCourse,
       branch: filterBranch,
       year: filterYear,
