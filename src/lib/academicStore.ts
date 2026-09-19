@@ -454,11 +454,31 @@ let branchesState = loadLocalStorage<BranchItem[]>('eduth_branches_v3', initialB
 let sectionsState = loadLocalStorage<SectionItem[]>('eduth_sections_v3', [])
 
 export function normalizeCollegeId(input?: string | null): string {
-  if (!input) return '13695a78-0105-4bde-bc85-d664bb66637e'
-  const trimmed = input.trim()
-  if (trimmed === '151' || trimmed === 'COL-151') return 'ea318ebf-893e-410c-a925-ac1d4dc986eb'
-  if (trimmed === '0361' || trimmed === 'COL001' || trimmed === 'COL-0361' || trimmed === 'PLATFORM_ALL') return '13695a78-0105-4bde-bc85-d664bb66637e'
-  if (isValidUUID(trimmed)) return trimmed
+  if (input && input.trim()) {
+    const trimmed = input.trim()
+    if (trimmed === '151' || trimmed === 'COL-151') return 'ea318ebf-893e-410c-a925-ac1d4dc986eb'
+    if (trimmed === '0361' || trimmed === 'COL001' || trimmed === 'COL-0361' || trimmed === 'PLATFORM_ALL') return '13695a78-0105-4bde-bc85-d664bb66637e'
+    if (isValidUUID(trimmed)) return trimmed
+  }
+
+  if (_loadedForCollege && _loadedForCollege !== 'SUPER_ADMIN' && isValidUUID(_loadedForCollege)) {
+    return _loadedForCollege
+  }
+
+  try {
+    const authStr = typeof window !== 'undefined' ? (localStorage.getItem('eduth_authenticated_user') || localStorage.getItem('eduth_auth_user')) : null
+    if (authStr) {
+      const u = JSON.parse(authStr)
+      const userCol = u?.college_id || u?.school_id || u?.collegeId
+      if (userCol && userCol.trim()) {
+        const trimmed = userCol.trim()
+        if (trimmed === '151' || trimmed === 'COL-151') return 'ea318ebf-893e-410c-a925-ac1d4dc986eb'
+        if (trimmed === '0361' || trimmed === 'COL001' || trimmed === 'COL-0361' || trimmed === 'PLATFORM_ALL') return '13695a78-0105-4bde-bc85-d664bb66637e'
+        if (isValidUUID(trimmed)) return trimmed
+      }
+    }
+  } catch {}
+
   return '13695a78-0105-4bde-bc85-d664bb66637e'
 }
 

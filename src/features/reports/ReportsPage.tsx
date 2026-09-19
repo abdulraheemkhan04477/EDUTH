@@ -54,7 +54,7 @@ export function ReportsPage() {
 
   // Stores
   const { students, teachers, classes, getAttendance } = useAcademicStore()
-  const { results } = useExamStore()
+  const { results, getStudentPublishedResults } = useExamStore()
   const { studentFees } = useFeeStore()
   const { materials } = useStudyMaterialStore()
   const { companies, drives, applications, placements, activities: _activities, adminMetrics: _adminMetrics } = useTnpStore()
@@ -307,12 +307,11 @@ export function ReportsPage() {
     let source = results
     if (isStudent || isParent) {
       if (!currentStudent) return []
-      source = results.filter(
-        (r) =>
-          r.is_published &&
-          (r.student_id === currentStudent.id ||
-            r.student_id === currentStudent.student_id ||
-            r.roll_no === currentStudent.roll_no)
+      source = getStudentPublishedResults(
+        currentStudent.id,
+        currentStudent.roll_no,
+        currentStudent.student_id,
+        currentStudent.email || user?.email
       )
     } else if (isTeacher) {
       source = results.filter((r) => isRecordInTeacherScope(r))

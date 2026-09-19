@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import type { Column } from '../../components/ui/DataTable'
 import { useAcademicStore, type SubjectItem } from '../../lib/academicStore'
+import { useAuth } from '../../app/providers/AuthProvider'
 
 // ===== DOMAIN INTERFACES =====
 export interface CourseItem {
@@ -36,6 +37,7 @@ export interface CourseItem {
 
 export interface BranchItem {
   id: string
+  college_id?: string
   course_name: string
   name: string
   code: string
@@ -44,6 +46,7 @@ export interface BranchItem {
 
 export interface SemesterItem {
   id: string
+  college_id?: string
   course_name: string
   name: string
   term: 'Odd' | 'Even'
@@ -52,6 +55,7 @@ export interface SemesterItem {
 
 export interface SectionItem {
   id: string
+  college_id?: string
   course_name: string
   branch_name: string
   semester_name: string
@@ -73,6 +77,8 @@ const initialCourses: CourseItem[] = [
 
 export function SubjectClassPage() {
   const { toast } = useToast()
+  const { user, collegeId: activeCollegeId } = useAuth()
+  const targetCollegeId = user?.college_id || activeCollegeId || user?.school_id || ''
   const [activeTab, setActiveTab] = useState('courses')
 
   // Academic Store Integration for Subjects, Semesters, Branches and Sections
@@ -200,6 +206,7 @@ export function SubjectClassPage() {
       setIsSavingBranch(true)
       await saveBranchStore({
         ...(editingBranch ? { id: editingBranch.id } : {}),
+        college_id: editingBranch?.college_id || targetCollegeId,
         course_name: branchForm.course_name,
         name: branchForm.name.trim(),
         code: branchForm.code.trim().toUpperCase(),
@@ -248,6 +255,7 @@ export function SubjectClassPage() {
       setIsSavingSemester(true)
       await saveSemesterStore({
         ...(editingSemester ? { id: editingSemester.id } : {}),
+        college_id: editingSemester?.college_id || targetCollegeId,
         course_name: semesterForm.course_name,
         name: semesterForm.name.trim(),
         term: semesterForm.term,
@@ -312,6 +320,7 @@ export function SubjectClassPage() {
       setIsSavingSection(true)
       await saveSectionStore({
         ...(editingSection ? { id: editingSection.id } : {}),
+        college_id: editingSection?.college_id || targetCollegeId,
         course_name: sectionForm.course_name,
         branch_name: sectionForm.branch_name,
         semester_name: sectionForm.semester_name,
@@ -390,6 +399,7 @@ export function SubjectClassPage() {
       setIsSavingSubject(true)
       await saveSubject({
         ...(editingSubject ? { id: editingSubject.id } : {}),
+        college_id: editingSubject?.college_id || targetCollegeId,
         course_name: subjectForm.course_name,
         branch_name: isCommonSubject ? 'Common Subject (All Branches)' : subjectForm.branch_name,
         semester_name: subjectForm.semester_name,

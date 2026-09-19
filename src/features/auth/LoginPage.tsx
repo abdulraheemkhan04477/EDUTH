@@ -4,14 +4,84 @@ import { useAuth } from '../../app/providers/AuthProvider'
 import { Button, Input, FormField } from '../../components/ui'
 import { useToast } from '../../components/ui/Toast'
 import { Modal } from '../../components/ui/Modal'
-import { Mail, Lock, Eye, EyeOff, School, ShieldCheck, GraduationCap, BookOpen, Users, ShieldAlert, UserPlus } from 'lucide-react'
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  GraduationCap,
+  BookOpen,
+  Users,
+  ShieldAlert,
+  UserPlus,
+  ChevronRight,
+  Calendar,
+  FileText,
+  Coins,
+  MessageSquare,
+  BarChart3,
+  Building2,
+} from 'lucide-react'
 import type { UserRole, CollegeRegistrationPayload } from '../../types/domain'
 
-const roles: { value: UserRole; label: string; icon: React.ElementType }[] = [
-  { value: 'admin', label: 'Admin', icon: ShieldCheck },
-  { value: 'teacher', label: 'Teacher', icon: GraduationCap },
-  { value: 'student', label: 'Student', icon: BookOpen },
-  { value: 'parent', label: 'Parent', icon: Users },
+interface RoleOption {
+  value: UserRole
+  label: string
+  subtitle: string
+  bgClass: string
+  borderClass: string
+  activeClass: string
+  iconBg: string
+  iconColor: string
+  icon: React.ElementType
+}
+
+const roleOptions: RoleOption[] = [
+  {
+    value: 'admin',
+    label: 'Admin',
+    subtitle: 'Full system access',
+    bgClass: 'bg-[#F0F7FF]',
+    borderClass: 'border-[#BFDBFE]',
+    activeClass: 'ring-2 ring-blue-600 border-blue-500 bg-blue-50/70',
+    iconBg: 'bg-blue-100',
+    iconColor: 'text-blue-600',
+    icon: ShieldCheck,
+  },
+  {
+    value: 'teacher',
+    label: 'Faculty / Teacher',
+    subtitle: 'Manage classes & students',
+    bgClass: 'bg-[#F0FDF4]',
+    borderClass: 'border-[#BBF7D0]',
+    activeClass: 'ring-2 ring-emerald-600 border-emerald-500 bg-emerald-50/70',
+    iconBg: 'bg-emerald-100',
+    iconColor: 'text-emerald-600',
+    icon: GraduationCap,
+  },
+  {
+    value: 'student',
+    label: 'Student',
+    subtitle: 'Access your academic details',
+    bgClass: 'bg-[#FAF5FF]',
+    borderClass: 'border-[#E9D5FF]',
+    activeClass: 'ring-2 ring-purple-600 border-purple-500 bg-purple-50/70',
+    iconBg: 'bg-purple-100',
+    iconColor: 'text-purple-600',
+    icon: BookOpen,
+  },
+  {
+    value: 'parent',
+    label: 'Parent',
+    subtitle: "Track your child's progress",
+    bgClass: 'bg-[#FFFBEB]',
+    borderClass: 'border-[#FDE68A]',
+    activeClass: 'ring-2 ring-amber-600 border-amber-500 bg-amber-50/70',
+    iconBg: 'bg-amber-100',
+    iconColor: 'text-amber-600',
+    icon: Users,
+  },
 ]
 
 export function LoginPage() {
@@ -20,8 +90,8 @@ export function LoginPage() {
   const { toast } = useToast()
 
   const [selectedRole, setSelectedRole] = useState<UserRole>('admin')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('admin@school.edu')
+  const [password, setPassword] = useState('password123')
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
@@ -38,6 +108,20 @@ export function LoginPage() {
       }
     }
   }, [isAuthenticated, role, navigate])
+
+  const handleRoleSelect = (newRole: UserRole) => {
+    setSelectedRole(newRole)
+    if (newRole === 'admin') {
+      setEmail('admin@school.edu')
+    } else if (newRole === 'teacher') {
+      setEmail('teacher@school.edu')
+    } else if (newRole === 'student') {
+      setEmail('student@school.edu')
+    } else if (newRole === 'parent') {
+      setEmail('parent@school.edu')
+    }
+    setPassword('password123')
+  }
 
   const validate = () => {
     const errs: { email?: string; password?: string } = {}
@@ -72,100 +156,176 @@ export function LoginPage() {
     navigate(targetRoute, { replace: true })
   }
 
-
   return (
-    <div className="min-h-screen flex">
-      {/* Left brand panel */}
-      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-indigo-700 via-indigo-800 to-slate-900 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.15),transparent_50%)]" />
-        <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full">
-          {/* Logo */}
-          <div className="flex items-center gap-2.5">
-            <div className="bg-white/15 backdrop-blur-md p-2.5 rounded-[var(--radius-btn)] border border-white/20 shadow-sm">
-              <School className="h-6 w-6" />
-            </div>
-            <span className="text-2xl font-display font-bold tracking-tight">EduFlow</span>
+    <div className="h-screen w-full flex bg-[#EBF3FC] font-sans antialiased text-slate-800 overflow-hidden">
+      {/* ===== Left Side Branding Panel ===== */}
+      <div className="hidden lg:flex w-[50%] xl:w-[52%] flex-col justify-between p-8 xl:p-12 relative overflow-hidden bg-gradient-to-br from-[#EAF3FD] via-[#E2EEFC] to-[#D5E6F9] h-full">
+        {/* Top Logo */}
+        <div className="relative z-10 flex items-center gap-3">
+          <div className="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-500/25">
+            <GraduationCap className="h-6 w-6 stroke-[2.2]" />
           </div>
-
-          {/* Hero text */}
-          <div className="my-auto py-12">
-            <h1 className="text-4xl lg:text-5xl font-display font-bold leading-tight mb-4 tracking-tight">
-              Manage your school with confidence
-            </h1>
-            <p className="text-white/80 text-lg max-w-md leading-relaxed">
-              The all-in-one platform unifying administration, faculty, and families into a single, intuitive experience.
+          <div>
+            <div className="flex items-center text-2xl xl:text-3xl font-extrabold tracking-tight text-[#0F172A]">
+              <span>Eduth</span>
+              <span className="text-[#4F46E5]">Flow</span>
+            </div>
+            <p className="text-[11px] font-semibold text-slate-500 tracking-wide -mt-0.5">
+              College Management System
             </p>
           </div>
+        </div>
 
-          {/* Stat chips */}
-          <div className="flex gap-3 flex-wrap">
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium">
-              <Users className="h-4 w-4 text-indigo-200" />
-              <span>2,847 Students</span>
+        {/* Hero Headline & Subtitle */}
+        <div className="relative z-10 my-auto py-2">
+          <h1 className="text-3xl xl:text-[40px] font-black text-[#0F172A] leading-[1.12] tracking-tight">
+            Smarter Campus.<br />
+            <span>Better Tomorrow.</span>
+          </h1>
+          <p className="text-slate-600 text-sm xl:text-base max-w-md font-normal leading-relaxed mt-3">
+            Streamline your college operations with a powerful, all-in-one management system.
+          </p>
+
+          {/* 6 Feature Badges (2x3 Grid) */}
+          <div className="grid grid-cols-2 gap-2.5 max-w-md mt-6">
+            <div className="bg-[#EEF2FF] border border-[#E0E7FF] text-[#3730A3] px-3 py-2 rounded-xl text-[11px] font-semibold flex items-center gap-2 shadow-2xs">
+              <div className="w-5.5 h-5.5 rounded-lg bg-[#E0E7FF] flex items-center justify-center text-[#4338CA] shrink-0">
+                <Users className="h-3 w-3" />
+              </div>
+              <span className="truncate">Student Management</span>
             </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium">
-              <GraduationCap className="h-4 w-4 text-indigo-200" />
-              <span>184 Teachers</span>
+
+            <div className="bg-[#F5F3FF] border border-[#DDD6FE] text-[#5B21B6] px-3 py-2 rounded-xl text-[11px] font-semibold flex items-center gap-2 shadow-2xs">
+              <div className="w-5.5 h-5.5 rounded-lg bg-[#DDD6FE] flex items-center justify-center text-[#6D28D9] shrink-0">
+                <Calendar className="h-3 w-3" />
+              </div>
+              <span className="truncate">Attendance & Classes</span>
             </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium">
-              <School className="h-4 w-4 text-indigo-200" />
-              <span>12 Schools</span>
+
+            <div className="bg-[#F0FDF4] border border-[#BBF7D0] text-[#166534] px-3 py-2 rounded-xl text-[11px] font-semibold flex items-center gap-2 shadow-2xs">
+              <div className="w-5.5 h-5.5 rounded-lg bg-[#DCFCE7] flex items-center justify-center text-[#15803D] shrink-0">
+                <FileText className="h-3 w-3" />
+              </div>
+              <span className="truncate">Exams & Results</span>
+            </div>
+
+            <div className="bg-[#FFFBEB] border border-[#FDE68A] text-[#92400E] px-3 py-2 rounded-xl text-[11px] font-semibold flex items-center gap-2 shadow-2xs">
+              <div className="w-5.5 h-5.5 rounded-lg bg-[#FEF3C7] flex items-center justify-center text-[#B45309] shrink-0">
+                <Coins className="h-3 w-3" />
+              </div>
+              <span className="truncate">Fees & Accounts</span>
+            </div>
+
+            <div className="bg-[#FDF2F8] border border-[#FBCFE8] text-[#9D174D] px-3 py-2 rounded-xl text-[11px] font-semibold flex items-center gap-2 shadow-2xs">
+              <div className="w-5.5 h-5.5 rounded-lg bg-[#FCE7F3] flex items-center justify-center text-[#BE185D] shrink-0">
+                <MessageSquare className="h-3 w-3" />
+              </div>
+              <span className="truncate">Communication</span>
+            </div>
+
+            <div className="bg-[#ECFEFF] border border-[#A5F3FC] text-[#155E75] px-3 py-2 rounded-xl text-[11px] font-semibold flex items-center gap-2 shadow-2xs">
+              <div className="w-5.5 h-5.5 rounded-lg bg-[#CFFAFE] flex items-center justify-center text-[#0E7490] shrink-0">
+                <BarChart3 className="h-3 w-3" />
+              </div>
+              <span className="truncate">Reports & Analytics</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Campus Building Graphic at Bottom Left */}
+        <div className="relative rounded-2xl overflow-hidden shadow-md border border-white/80 group shrink-0">
+          <img
+            src="https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=80"
+            alt="EduthFlow Campus"
+            className="w-full h-40 xl:h-44 object-cover object-center transform transition-transform duration-700 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1E40AF]/85 via-[#2563EB]/25 to-transparent flex flex-col justify-end p-4">
+            <div className="relative z-10">
+              <p className="font-['Caveat',cursive] text-xl xl:text-2xl text-white font-bold tracking-wider drop-shadow-md">
+                Manage • Track • Grow
+              </p>
+              <div className="w-32 h-0.5 bg-gradient-to-r from-white via-white/80 to-transparent rounded-full mt-0.5" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Right login form */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-12 bg-canvas">
-        <div className="w-full max-w-md bg-surface p-8 rounded-2xl border border-border/80 shadow-[var(--shadow-soft)]">
-          {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="bg-brand-600 text-white p-2 rounded-[var(--radius-btn)]">
-              <School className="h-6 w-6" />
+      {/* ===== Right Side Login Panel ===== */}
+      <div className="flex-1 flex items-center justify-center p-4 lg:p-8 h-full overflow-y-auto">
+        <div className="w-full max-w-[580px] xl:max-w-[620px] bg-white rounded-[28px] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.08)] border border-slate-100 p-6 xl:p-8 relative my-auto">
+          {/* Mobile Logo */}
+          <div className="lg:hidden flex items-center gap-2.5 mb-4 justify-center">
+            <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md">
+              <GraduationCap className="h-4.5 w-4.5" />
             </div>
-            <span className="text-xl font-display font-bold text-brand-600">EduFlow</span>
+            <div>
+              <div className="text-xl font-extrabold text-[#0F172A]">
+                <span>Eduth</span><span className="text-indigo-600">Flow</span>
+              </div>
+            </div>
           </div>
 
-          <h2 className="text-2xl font-display font-bold text-ink-900 mb-1 tracking-tight">Welcome back</h2>
-          <p className="text-ink-400 text-sm mb-6">Please select your role and sign in to continue.</p>
-
-          {/* Role selector tiles - 2x2 grid */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            {roles.map(({ value, label, icon: Icon }) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setSelectedRole(value)}
-                className={`flex flex-col items-center gap-2 p-3.5 rounded-[var(--radius-card)] border transition-all duration-150 cursor-pointer ${
-                  selectedRole === value
-                    ? 'border-brand-600 bg-brand-100/70 text-brand-600 font-semibold shadow-2xs'
-                    : 'border-border text-ink-600 hover:border-slate-300 hover:bg-slate-50/50'
-                }`}
-              >
-                <Icon className={`h-5 w-5 ${selectedRole === value ? 'text-brand-600' : 'text-slate-400'}`} />
-                <span className="text-xs font-medium">{label}</span>
-              </button>
-            ))}
+          {/* Top Graduation Cap Icon & Header */}
+          <div className="flex flex-col items-center text-center mb-5">
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 text-[#2563EB] flex items-center justify-center mb-2.5 shadow-2xs">
+              <GraduationCap className="h-8 w-8 stroke-[2.2]" />
+            </div>
+            <h2 className="text-2xl font-extrabold text-[#0F172A] tracking-tight">Welcome Back</h2>
+            <p className="text-slate-500 text-xs xl:text-sm mt-0.5 font-medium">Select your role and enter credentials to sign in</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {/* 2x2 Grid of Selectable Role Cards (Spacious & Matching Reference Image) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-5">
+            {roleOptions.map((opt) => {
+              const Icon = opt.icon
+              const isSelected = selectedRole === opt.value
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => handleRoleSelect(opt.value)}
+                  className={`p-4 rounded-2xl border transition-all duration-200 text-left flex items-center justify-between cursor-pointer group relative ${
+                    isSelected
+                      ? `${opt.activeClass} shadow-md`
+                      : `${opt.bgClass} ${opt.borderClass} opacity-85 hover:opacity-100 hover:shadow-md hover:border-slate-300`
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-10 h-10 rounded-xl ${opt.iconBg} ${opt.iconColor} flex items-center justify-center shrink-0 shadow-2xs`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-bold text-xs xl:text-sm text-slate-800 truncate">
+                        {opt.label}
+                      </div>
+                      <p className="text-[10px] xl:text-[11px] text-slate-500 truncate mt-0.5">{opt.subtitle}</p>
+                    </div>
+                  </div>
+                  <ChevronRight
+                    className={`h-4 w-4 shrink-0 transition-transform ${
+                      isSelected ? 'text-blue-600 translate-x-0.5' : 'text-slate-400 group-hover:translate-x-0.5'
+                    }`}
+                  />
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Login Inputs Form (Shown Directly on Front Page) */}
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             <FormField label="Email address" htmlFor="email" error={errors.email}>
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@school.edu"
+                placeholder="email@college.edu"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                icon={<Mail className="h-4 w-4" />}
+                icon={<Mail className="h-4 w-4 text-slate-400" />}
                 error={!!errors.email}
               />
             </FormField>
 
-            <FormField
-              label="Password"
-              htmlFor="password"
-              error={errors.password}
-            >
+            <FormField label="Password" htmlFor="password" error={errors.password}>
               <div className="relative">
                 <Input
                   id="password"
@@ -173,13 +333,13 @@ export function LoginPage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  icon={<Lock className="h-4 w-4" />}
+                  icon={<Lock className="h-4 w-4 text-slate-400" />}
                   error={!!errors.password}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-900 cursor-pointer"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -188,25 +348,43 @@ export function LoginPage() {
             </FormField>
 
             <div className="flex justify-end">
-              <button type="button" className="text-xs text-brand-600 hover:text-brand-700 cursor-pointer">
+              <button type="button" className="text-xs font-semibold text-blue-600 hover:text-blue-700 cursor-pointer">
                 Forgot password?
               </button>
             </div>
 
-            <Button type="submit" isLoading={isLoading} className="w-full">
-              Sign in as {roles.find(r => r.value === selectedRole)?.label}
+            <Button type="submit" isLoading={isLoading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl shadow-md shadow-blue-500/20">
+              Sign in to Dashboard
             </Button>
           </form>
 
-          <p className="text-center text-sm text-ink-400 mt-6">
-            New school?{' '}
-            <button
-              onClick={() => setShowRegisterModal(true)}
-              className="text-brand-600 font-medium hover:text-brand-700 cursor-pointer"
-            >
-              Register School
-            </button>
-          </p>
+          {/* OR Divider */}
+          <div className="relative my-4 text-center">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200"></div>
+            </div>
+            <span className="relative bg-white px-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">OR</span>
+          </div>
+
+          {/* Compact Register New College Button */}
+          <button
+            type="button"
+            onClick={() => setShowRegisterModal(true)}
+            className="w-full py-2.5 px-4 rounded-xl bg-slate-50 border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/50 hover:shadow-xs transition-all duration-200 flex items-center justify-between group cursor-pointer"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                <Building2 className="h-4 w-4" />
+              </div>
+              <span className="text-xs xl:text-sm font-bold text-slate-700 group-hover:text-indigo-700 transition-colors truncate">
+                Register New College
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-[11px] font-semibold text-indigo-600 group-hover:translate-x-0.5 transition-transform shrink-0">
+              <span>Register</span>
+              <ChevronRight className="h-3.5 w-3.5" />
+            </div>
+          </button>
         </div>
       </div>
 

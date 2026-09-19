@@ -8,7 +8,7 @@ import {
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell, PieChart, Pie, Legend } from 'recharts'
 import { useAuth } from '../../app/providers/AuthProvider'
 import { useAcademicStore, COURSES, BRANCHES_BY_COURSE, YEARS_BY_COURSE, academicStore, getTeacherForUser, isBranchMatch, normalizeCollegeId } from '../../lib/academicStore'
-import { useExamStore, calculateGradeAndPoint } from '../../lib/examStore'
+import { useExamStore, calculateGradeAndPoint, resolveSubjectName, fetchStudentPublishedResultsFromSupabase } from '../../lib/examStore'
 import type { ExamRecord, ExamStatus } from '../../lib/examStore'
 import { useToast } from '../../components/ui/Toast'
 
@@ -235,15 +235,23 @@ export function ExamsPage() {
   const subjectsForSelectedExam = useMemo(() => {
     if (!selectedDashboardExamObj) return []
     const subjs = examSubjects.filter((s) => s.exam_id === selectedDashboardExamObj.id)
-    if (subjs.length > 0) return subjs
+    if (subjs.length > 0) {
+      return subjs.map((s) => ({
+        ...s,
+        subject_name: resolveSubjectName(s.subject_name, s.id || s.subject_id),
+      }))
+    }
     if (selectedDashboardExamObj.subjects && selectedDashboardExamObj.subjects.length > 0) {
-      return selectedDashboardExamObj.subjects
+      return selectedDashboardExamObj.subjects.map((s) => ({
+        ...s,
+        subject_name: resolveSubjectName(s.subject_name, (s as any).id || s.subject_id),
+      }))
     }
     if (selectedDashboardExamObj.subject) {
       return [{
         id: 's_single_' + selectedDashboardExamObj.id,
         exam_id: selectedDashboardExamObj.id,
-        subject_name: selectedDashboardExamObj.subject,
+        subject_name: resolveSubjectName(selectedDashboardExamObj.subject),
         subject_code: '',
         date: selectedDashboardExamObj.date,
         start_time: selectedDashboardExamObj.start_time || '09:30 AM',
@@ -319,11 +327,12 @@ export function ExamsPage() {
       let hasAnyMark = false
 
       const subjectBreakdown = subjectsForSelectedExam.map((sub) => {
+        const subName = resolveSubjectName(sub.subject_name, sub.id || sub.subject_id)
         const r = results.find(
           (res) =>
             res.exam_id === selectedDashboardExamObj.id &&
             (res.student_id === st.id || res.roll_no === st.roll_no) &&
-            (res.exam_subject_id === sub.id || res.subject === sub.subject_name)
+            (res.exam_subject_id === sub.id || res.subject === sub.subject_name || resolveSubjectName(res.subject, res.exam_subject_id) === subName)
         )
 
         if (r) {
@@ -334,7 +343,7 @@ export function ExamsPage() {
             hasFailed = true
           }
           return {
-            subject_name: sub.subject_name,
+            subject_name: subName,
             obtained_marks: r.obtained_marks,
             max_marks: r.max_marks,
             passing_marks: r.passing_marks,
@@ -344,7 +353,7 @@ export function ExamsPage() {
         } else {
           totalMax += sub.max_marks || 100
           return {
-            subject_name: sub.subject_name,
+            subject_name: subName,
             obtained_marks: null,
             max_marks: sub.max_marks || 100,
             passing_marks: sub.passing_marks || 40,
@@ -465,10 +474,13 @@ export function ExamsPage() {
     const finalType = formType === 'Custom' ? customType || 'Custom Exam' : formType
 
     const selectedSubjectsPayload = formSelectedSubjectIds.map((subId) => {
-      const subObj = formAvailableSubjects.find((s) => s.id === subId)
+      const allSubs = academicStore.getSubjects()
+      const subObj =
+        formAvailableSubjects.find((s) => s.id === subId || s.code === subId || s.name === subId) ||
+        allSubs.find((s) => s.id === subId || s.code === subId || s.name === subId)
       return {
         subject_id: subId,
-        subject_name: subObj ? subObj.name : subId,
+        subject_name: subObj ? subObj.name : resolveSubjectName(subId),
         subject_code: subObj ? subObj.code : '',
         date: formDate,
         start_time: formStartTime,
@@ -587,7 +599,7 @@ export function ExamsPage() {
       const existingRes = results.find(
         (r) => r.exam_id === selectedDashboardExamObj.id && (r.student_id === st.id || r.roll_no === st.roll_no) && (r.exam_subject_id === activeSelectedSubjectObj.id || r.subject === subjectName)
       )
-      const isPub = existingRes && existingRes.is_published !== undefined ? existingRes.is_published : true
+      const isPub = existingRes && existingRes.is_published !== undefined ? Boolean(existingRes.is_published) : false
 
       return {
         college_id: userCollege,
@@ -755,17 +767,37 @@ export function ExamsPage() {
     }))
   }, [currentStudent, studentClassExams])
 
+  useEffect(() => {
+    if (!currentStudent) return
+    const ids = Array.from(
+      new Set(
+        [
+          currentStudent.id,
+          currentStudent.student_id,
+          currentStudent.roll_no,
+          `STU-${currentStudent.roll_no}`,
+          (currentStudent.roll_no || '').replace(/^STU-/i, ''),
+        ].filter(Boolean) as string[]
+      )
+    )
+    fetchStudentPublishedResultsFromSupabase(ids)
+  }, [currentStudent?.id, currentStudent?.student_id, currentStudent?.roll_no])
+
   // Student / Parent Published Results
   const studentPublishedResults = useMemo(() => {
     if (!currentStudent) return []
-    const allPub = getStudentPublishedResults(
+    const raw = getStudentPublishedResults(
       currentStudent.id,
       currentStudent.roll_no,
       currentStudent.student_id,
-      currentStudent.email || user?.email
+      currentStudent.email || (currentStudent as any).parent_email || user?.email
     )
-    if (selectedStudentExamFilter === 'All Exams') return allPub
-    return allPub.filter((r) => r.exam_id === selectedStudentExamFilter)
+    const resolved = raw.map((r: any) => ({
+      ...r,
+      subject: resolveSubjectName(r.subject, r.exam_subject_id),
+    }))
+    if (selectedStudentExamFilter === 'All Exams') return resolved
+    return resolved.filter((r) => r.exam_id === selectedStudentExamFilter)
   }, [currentStudent, user?.email, getStudentPublishedResults, selectedStudentExamFilter])
 
   // Analysis Calculations

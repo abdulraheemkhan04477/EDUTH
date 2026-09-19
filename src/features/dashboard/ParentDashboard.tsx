@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { StatCard, NoticeCard, ChildSwitcher } from '../../components/ui'
 import { CalendarCheck, IndianRupee, Award } from 'lucide-react'
 import { formatCurrency } from '../../lib/formatCurrency'
@@ -11,7 +11,7 @@ import { useAuth } from '../../app/providers/AuthProvider'
 import { useAcademicStore, isBranchMatch, isSemesterMatch } from '../../lib/academicStore'
 import { useFeeStore, findMatchingFeeStructure, isPaymentForStudent, calculateInstallmentStatuses } from '../../lib/feeStore'
 import { useNoticeStore } from '../../lib/noticeStore'
-import { useExamStore } from '../../lib/examStore'
+import { useExamStore, resolveSubjectName, fetchStudentPublishedResultsFromSupabase } from '../../lib/examStore'
 
 const attendanceTrend = [
   { week: 'W1', percentage: 100 }, { week: 'W2', percentage: 80 },
@@ -209,9 +209,35 @@ export function ParentDashboard() {
     })
   }, [storeExams, childStudent])
 
+  useEffect(() => {
+    if (!childStudent) return
+    const ids = Array.from(
+      new Set(
+        [
+          childStudent.id,
+          childStudent.student_id,
+          childStudent.roll_no,
+          `STU-${childStudent.roll_no}`,
+          (childStudent.roll_no || '').replace(/^STU-/i, ''),
+        ].filter(Boolean) as string[]
+      )
+    )
+    fetchStudentPublishedResultsFromSupabase(ids)
+  }, [childStudent?.id, childStudent?.student_id, childStudent?.roll_no])
+
   const childPublishedResults = useMemo(() => {
-    return getStudentPublishedResults(childStudent.id)
-  }, [getStudentPublishedResults, childStudent])
+    if (!childStudent) return []
+    const raw = getStudentPublishedResults(
+      childStudent.id,
+      childStudent.roll_no,
+      childStudent.student_id,
+      childStudent.email || childStudent.parent_email || user?.email
+    )
+    return raw.map((r: any) => ({
+      ...r,
+      subject: resolveSubjectName(r.subject, r.exam_subject_id),
+    }))
+  }, [getStudentPublishedResults, childStudent, user?.email])
 
   const childLatestPct = useMemo(() => {
     if (!childPublishedResults || childPublishedResults.length === 0) return null

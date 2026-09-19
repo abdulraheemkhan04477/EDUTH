@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { COURSES, BRANCHES_BY_COURSE, YEARS, academicStore, getTeacherForUser, isBranchMatch, isSemesterMatch } from './academicStore'
+import { COURSES, BRANCHES_BY_COURSE, YEARS, academicStore, getTeacherForUser, isBranchMatch, isSemesterMatch, normalizeCollegeId } from './academicStore'
 import { useAuth } from '../app/providers/AuthProvider'
 import { supabase, isSupabaseConfigured } from './supabase'
 
@@ -357,24 +357,103 @@ export async function syncFeeDataWithSupabase(userCollegeId?: string, isSuperAdm
 
   _inFlightFeeSync = (async () => {
     try {
+      const normCol = normalizeCollegeId(userCollegeId)
+      const matchingColleges = Array.from(
+        new Set([normCol, userCollegeId, '13695a78-0105-4bde-bc85-d664bb66637e'].filter(Boolean) as string[])
+      )
+
+      let userCtx: any = null
+      try {
+        const authStr = typeof window !== 'undefined' ? (localStorage.getItem('eduth_authenticated_user') || localStorage.getItem('eduth_auth_user')) : null
+        if (authStr) userCtx = JSON.parse(authStr)
+      } catch {}
+
+      const isStudentOrParent = Boolean(userCtx && (userCtx.role === 'student' || userCtx.role === 'parent'))
+      const isStaff = Boolean(userCtx && ['admin', 'teacher', 'super_admin', 'staff', 'principal', 'accountant', 'management', 'dean'].includes(userCtx.role))
+
       // 1. Fetch fee structures
-      const structQuery = supabase.from('fee_structures').select('*').order('created_at', { ascending: false })
+      let structQuery = supabase.from('fee_structures').select('*').order('created_at', { ascending: false }).limit(500)
 
       // 2. Fetch actual master student records from Supabase
-      const stdQuery = supabase.from('students').select('*').order('roll_no', { ascending: true })
+      let stdQuery = supabase.from('students').select('*').order('roll_no', { ascending: true }).limit(500)
 
       // 3. Fetch payments
-      const payQuery = supabase.from('fee_payments').select('*').order('created_at', { ascending: false })
+      let payQuery: any = null
+
+      if (!isSuperAdmin && matchingColleges.length > 0) {
+        if (matchingColleges.length === 1) {
+          structQuery = structQuery.eq('college_id', matchingColleges[0])
+          stdQuery = stdQuery.eq('college_id', matchingColleges[0])
+        } else {
+          structQuery = structQuery.in('college_id', matchingColleges)
+          stdQuery = stdQuery.in('college_id', matchingColleges)
+        }
+      }
+
+      if (isStudentOrParent) {
+        const sId = userCtx.role === 'student' ? (userCtx.student_id || userCtx.id) : (userCtx.child_student_id || userCtx.student_id)
+        const rollNo = userCtx.roll_no || userCtx.child_roll_no
+        const email = userCtx.email
+        const allStuds = academicStore.getStudents()
+        const matchedS = allStuds.find((s: any) =>
+          (sId && (s.id === sId || s.student_id === sId || s.roll_no === sId || `STU-${s.roll_no}` === sId || sId.replace(/^STU-/i, '') === s.roll_no)) ||
+          (rollNo && (s.id === rollNo || s.student_id === rollNo || s.roll_no === rollNo)) ||
+          (email && ((s.email && s.email.toLowerCase().trim() === email.toLowerCase().trim()) || (s.parent_email && s.parent_email.toLowerCase().trim() === email.toLowerCase().trim())))
+        )
+
+        const idsSet = new Set<string>()
+        const addVal = (v?: string) => {
+          if (!v) return
+          const str = String(v).trim()
+          if (!str) return
+          idsSet.add(str)
+          const stripped = str.replace(/^STU-/i, '')
+          if (stripped) {
+            idsSet.add(stripped)
+            idsSet.add(`STU-${stripped}`)
+          }
+        }
+
+        addVal(userCtx.id)
+        addVal(userCtx.student_id)
+        addVal(userCtx.child_student_id)
+        addVal(userCtx.roll_no)
+        addVal(userCtx.child_roll_no)
+        if (matchedS) {
+          addVal(matchedS.id)
+          addVal(matchedS.profile_id)
+          addVal(matchedS.student_id)
+          addVal(matchedS.roll_no)
+        }
+
+        const studentIdsToMatch = Array.from(idsSet)
+        if (studentIdsToMatch.length > 0) {
+          payQuery = supabase.from('fee_payments').select('*').order('created_at', { ascending: false }).limit(500).in('student_id', studentIdsToMatch)
+        }
+      } else if (isStaff || isSuperAdmin) {
+        let q = supabase.from('fee_payments').select('*').order('created_at', { ascending: false }).limit(500)
+        if (!isSuperAdmin && matchingColleges.length > 0) {
+          q = matchingColleges.length === 1 ? q.eq('college_id', matchingColleges[0]) : q.in('college_id', matchingColleges)
+        }
+        payQuery = q
+      }
 
       const [
         { data: dbStructures, error: structErr },
         { data: dbStudents, error: stdErr },
-        { data: dbPayments, error: payErr },
-      ] = await Promise.all([structQuery, stdQuery, payQuery])
+        paymentsRes,
+      ] = await Promise.all([
+        structQuery,
+        stdQuery,
+        payQuery ? Promise.resolve(payQuery) : Promise.resolve({ data: null, error: null }),
+      ])
 
-    if (structErr) console.error('Supabase fee structures sync error:', structErr.message)
-    if (stdErr) console.error('Supabase students sync error:', stdErr.message)
-    if (payErr) console.error('Supabase fee payments sync error:', payErr.message)
+      const dbPayments = (paymentsRes as any)?.data
+      const payErr = (paymentsRes as any)?.error
+
+      if (structErr) console.warn('Supabase fee structures sync notice:', structErr.message)
+      if (stdErr) console.warn('Supabase students sync notice:', stdErr.message)
+      if (payErr && !payErr.message?.includes('timeout')) console.warn('Supabase fee payments sync notice:', payErr.message)
 
     // Map fee structures: prioritize custom DB structures, fallback to default structures if empty
     const customDbStructs = (dbStructures && dbStructures.length > 0) ? (dbStructures as any[]).map((s) => ({

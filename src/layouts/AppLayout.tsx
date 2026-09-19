@@ -170,8 +170,8 @@ export function AppLayout() {
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <h1 className="text-lg font-display font-bold text-ink-900 tracking-tight truncate">EduFlow</h1>
-              <p className="text-[10px] text-ink-400 font-medium uppercase tracking-wider -mt-0.5">School Management</p>
+              <h1 className="text-lg font-display font-bold text-ink-900 tracking-tight truncate">Eduth<span className="text-indigo-600">Flow</span></h1>
+              <p className="text-[10px] text-ink-400 font-medium uppercase tracking-wider -mt-0.5">College Management</p>
             </div>
           )}
         </div>

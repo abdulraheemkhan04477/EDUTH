@@ -379,6 +379,75 @@ export function invalidateExamCache() {
   _lastExamSyncTime = 0
 }
 
+export async function fetchStudentPublishedResultsFromSupabase(studentIds: string[]): Promise<ExamResultRecord[]> {
+  if (!isSupabaseConfigured || !studentIds || studentIds.length === 0) return []
+  const validIds = Array.from(new Set(studentIds.filter(Boolean)))
+  if (validIds.length === 0) return []
+
+  try {
+    const { data, error } = await supabase
+      .from('results')
+      .select('*')
+      .in('student_id', validIds)
+
+    if (error || !data) return []
+
+    const formatted = data
+      .filter((r: any) => Boolean(r.is_published) || Boolean(r.published) || String(r.is_published) === 'true' || String(r.published) === 'true')
+      .map((r: any) => {
+        const maxM = Number(r.max_marks) || 100
+        const obtM = Number(r.obtained_marks ?? r.marks) || 0
+        const passM = Number(r.passing_marks) || 40
+        const pct = Math.round((obtM / maxM) * 100)
+        const calc = calculateGradeAndPoint(obtM, maxM, passM)
+
+        return {
+          id: r.id,
+          college_id: r.college_id,
+          exam_id: r.exam_id,
+          exam_subject_id: r.exam_subject_id,
+          student_id: r.student_id,
+          student_name: r.student_name || '',
+          roll_no: r.roll_no || '',
+          course: r.course || 'B.Tech',
+          branch: r.branch || 'ECE',
+          year: r.year || '1st Year',
+          semester: r.semester || 'Semester 1',
+          section: r.section || 'Section A',
+          subject: resolveSubjectName(r.subject, r.exam_subject_id),
+          max_marks: maxM,
+          obtained_marks: obtM,
+          passing_marks: passM,
+          percentage: Number(r.percentage) || pct,
+          grade: r.grade || calc.grade,
+          grade_point: Number(r.grade_point) || calc.gradePoint,
+          remarks: r.remarks || '',
+          status: (r.status || calc.status) as any,
+          is_published: true,
+          published_date: r.published_date,
+          published_by: r.published_by,
+          entered_by: r.entered_by,
+          created_at: r.created_at || new Date().toISOString(),
+          updated_at: r.updated_at,
+        }
+      })
+
+    if (formatted.length > 0) {
+      const map = new Map<string, ExamResultRecord>()
+      resultsState.forEach((item) => map.set(item.id, item))
+      formatted.forEach((item) => map.set(item.id, item))
+
+      resultsState = Array.from(map.values())
+      saveLocalStorage('eduth_results_v3', resultsState)
+      notifyListeners()
+    }
+
+    return formatted
+  } catch (e) {
+    return []
+  }
+}
+
 export async function syncExamsWithSupabase(userCollegeId?: string, isSuperAdmin?: boolean) {
   if (!isSupabaseConfigured) return
 
@@ -395,45 +464,100 @@ export async function syncExamsWithSupabase(userCollegeId?: string, isSuperAdmin
 
   _inFlightExamSync = (async () => {
     try {
-      let examQuery = supabase.from('exams').select('*').order('created_at', { ascending: false }).limit(500)
-      let subjectQuery = supabase.from('exam_subjects').select('*').limit(1000)
-      let resQuery = supabase.from('results').select('*').limit(1000)
+      let userCtx: any = null
+      try {
+        const authStr = typeof window !== 'undefined' ? (localStorage.getItem('eduth_authenticated_user') || localStorage.getItem('eduth_auth_user')) : null
+        if (authStr) userCtx = JSON.parse(authStr)
+      } catch {}
 
-      if (!isSuperAdmin && userCollegeId && userCollegeId !== 'PLATFORM_ALL') {
-        const matchingColleges = Array.from(
-          new Set([normCollegeId, userCollegeId, '13695a78-0105-4bde-bc85-d664bb66637e'].filter(Boolean) as string[])
-        )
+      const isStudentOrParent = Boolean(userCtx && (userCtx.role === 'student' || userCtx.role === 'parent'))
+      const isStaff = Boolean(userCtx && ['admin', 'teacher', 'super_admin', 'staff', 'principal', 'accountant', 'management', 'dean'].includes(userCtx.role))
+
+      let examQuery = supabase.from('exams').select('*').order('created_at', { ascending: false }).limit(200)
+      let subjectQuery = supabase.from('exam_subjects').select('*').limit(500)
+
+      const matchingColleges = Array.from(
+        new Set([normCollegeId, userCollegeId, '13695a78-0105-4bde-bc85-d664bb66637e'].filter(Boolean) as string[])
+      )
+
+      if (!isSuperAdmin && matchingColleges.length > 0) {
         if (matchingColleges.length === 1) {
           examQuery = examQuery.eq('college_id', matchingColleges[0])
           subjectQuery = subjectQuery.eq('college_id', matchingColleges[0])
-          resQuery = resQuery.eq('college_id', matchingColleges[0])
         } else {
           examQuery = examQuery.in('college_id', matchingColleges)
           subjectQuery = subjectQuery.in('college_id', matchingColleges)
-          resQuery = resQuery.in('college_id', matchingColleges)
         }
       }
 
-      const [
-        examRes,
-        subjRes,
-        resultsRes
-      ] = await Promise.allSettled([
-        examQuery,
-        subjectQuery,
-        resQuery
+      let studentIdsToMatch: string[] = []
+      if (isStudentOrParent) {
+        const sId = userCtx.role === 'student' ? (userCtx.student_id || userCtx.id) : (userCtx.child_student_id || userCtx.student_id)
+        const rollNo = userCtx.roll_no || userCtx.child_roll_no
+        const email = userCtx.email
+        const allStuds = academicStore.getStudents()
+        const matchedS = allStuds.find((s: any) =>
+          (sId && (s.id === sId || s.student_id === sId || s.roll_no === sId || `STU-${s.roll_no}` === sId || sId.replace(/^STU-/i, '') === s.roll_no)) ||
+          (rollNo && (s.id === rollNo || s.student_id === rollNo || s.roll_no === rollNo)) ||
+          (email && ((s.email && s.email.toLowerCase().trim() === email.toLowerCase().trim()) || (s.parent_email && s.parent_email.toLowerCase().trim() === email.toLowerCase().trim())))
+        )
+
+        const idsSet = new Set<string>()
+        const addVal = (v?: string) => {
+          if (!v) return
+          const str = String(v).trim()
+          if (!str) return
+          idsSet.add(str)
+          const stripped = str.replace(/^STU-/i, '')
+          if (stripped) {
+            idsSet.add(stripped)
+            idsSet.add(`STU-${stripped}`)
+          }
+        }
+
+        addVal(userCtx.id)
+        addVal(userCtx.student_id)
+        addVal(userCtx.child_student_id)
+        addVal(userCtx.roll_no)
+        addVal(userCtx.child_roll_no)
+        if (matchedS) {
+          addVal(matchedS.id)
+          addVal(matchedS.profile_id)
+          addVal(matchedS.student_id)
+          addVal(matchedS.roll_no)
+        }
+
+        studentIdsToMatch = Array.from(idsSet)
+      }
+
+      // For student/parent, fetch targeted results via indexed query directly
+      let resQuery = null
+      if (isStudentOrParent && studentIdsToMatch.length > 0) {
+        await fetchStudentPublishedResultsFromSupabase(studentIdsToMatch)
+      } else if (isStaff || isSuperAdmin) {
+        let q = supabase.from('results').select('*').limit(200)
+        if (!isSuperAdmin && matchingColleges.length > 0) {
+          q = matchingColleges.length === 1 ? q.eq('college_id', matchingColleges[0]) : q.in('college_id', matchingColleges)
+        }
+        resQuery = q
+      }
+
+      const [examRes, subjRes, resultsRes] = await Promise.allSettled([
+        Promise.resolve(examQuery),
+        Promise.resolve(subjectQuery),
+        resQuery ? Promise.resolve(resQuery) : Promise.resolve({ data: null, error: null })
       ])
 
-      const dbExams = examRes.status === 'fulfilled' ? examRes.value.data : null
-      const examErr = examRes.status === 'fulfilled' ? examRes.value.error : (examRes as any).reason
-      const dbSubjects = subjRes.status === 'fulfilled' ? subjRes.value.data : null
-      const subjErr = subjRes.status === 'fulfilled' ? subjRes.value.error : (subjRes as any).reason
-      const dbResults = resultsRes.status === 'fulfilled' ? resultsRes.value.data : null
-      const resErr = resultsRes.status === 'fulfilled' ? resultsRes.value.error : (resultsRes as any).reason
+      const dbExams = examRes.status === 'fulfilled' ? (examRes.value as any)?.data : null
+      const examErr = examRes.status === 'fulfilled' ? (examRes.value as any)?.error : (examRes as any).reason
+      const dbSubjects = subjRes.status === 'fulfilled' ? (subjRes.value as any)?.data : null
+      const subjErr = subjRes.status === 'fulfilled' ? (subjRes.value as any)?.error : (subjRes as any).reason
+      const dbResults = resultsRes.status === 'fulfilled' ? (resultsRes.value as any)?.data : null
+      const resErr = resultsRes.status === 'fulfilled' ? (resultsRes.value as any)?.error : (resultsRes as any).reason
 
       if (examErr) console.warn('Supabase exams fetch notice:', (examErr as any).message || examErr)
       if (subjErr) console.warn('Supabase exam subjects fetch notice:', (subjErr as any).message || subjErr)
-      if (resErr) console.warn('Supabase results fetch notice:', (resErr as any).message || resErr)
+      if (resErr && !resErr.message?.includes('timeout')) console.warn('Supabase results fetch notice:', (resErr as any).message || resErr)
 
       if (dbSubjects && dbSubjects.length > 0) {
         examSubjectsState = (dbSubjects as any[]).map((s) => ({
@@ -441,7 +565,7 @@ export async function syncExamsWithSupabase(userCollegeId?: string, isSuperAdmin
           college_id: s.college_id,
           exam_id: s.exam_id,
           subject_id: s.subject_id,
-          subject_name: s.subject_name || '',
+          subject_name: resolveSubjectName(s.subject_name, s.id || s.subject_id),
           subject_code: s.subject_code || '',
           date: s.date || new Date().toISOString().split('T')[0],
           start_time: s.start_time || '09:30 AM',
@@ -485,8 +609,7 @@ export async function syncExamsWithSupabase(userCollegeId?: string, isSuperAdmin
       }
 
       if (dbResults && dbResults.length > 0) {
-        const sortedDbResults = [...(dbResults as any[])].sort((a, b) => new Date(b.updated_at || b.created_at || 0).getTime() - new Date(a.updated_at || a.created_at || 0).getTime())
-        resultsState = sortedDbResults.map((r) => {
+        const mappedDbResults = (dbResults as any[]).map((r) => {
           const maxM = Number(r.max_marks) || 100
           const obtM = Number(r.obtained_marks ?? r.marks) || 0
           const passM = Number(r.passing_marks) || 40
@@ -506,7 +629,7 @@ export async function syncExamsWithSupabase(userCollegeId?: string, isSuperAdmin
             year: r.year || '1st Year',
             semester: r.semester || 'Semester 1',
             section: r.section || 'Section A',
-            subject: r.subject || '',
+            subject: resolveSubjectName(r.subject, r.exam_subject_id),
             max_marks: maxM,
             obtained_marks: obtM,
             passing_marks: passM,
@@ -515,15 +638,25 @@ export async function syncExamsWithSupabase(userCollegeId?: string, isSuperAdmin
             grade_point: Number(r.grade_point) || calc.gradePoint,
             remarks: r.remarks || '',
             status: (r.status || calc.status) as any,
-            is_published: r.is_published !== false && r.published !== false,
+            is_published: r.is_published === true || r.published === true,
             published_date: r.published_date,
             published_by: r.published_by,
             entered_by: r.entered_by,
             created_at: r.created_at || new Date().toISOString(),
-            updated_at: r.updated_at || new Date().toISOString(),
+            updated_at: r.updated_at,
           }
         })
+
+        const resultMap = new Map<string, ExamResultRecord>()
+        resultsState.forEach((item) => resultMap.set(item.id, item))
+        mappedDbResults.forEach((item) => resultMap.set(item.id, item))
+
+        resultsState = Array.from(resultMap.values()).sort(
+          (a, b) => new Date(b.updated_at || b.created_at || 0).getTime() - new Date(a.updated_at || a.created_at || 0).getTime()
+        )
         saveLocalStorage('eduth_results_v3', resultsState)
+      } else if (isStudentOrParent && studentIdsToMatch.length > 0) {
+        await fetchStudentPublishedResultsFromSupabase(studentIdsToMatch)
       }
 
       _lastExamSyncTime = Date.now()
@@ -537,6 +670,45 @@ export async function syncExamsWithSupabase(userCollegeId?: string, isSuperAdmin
   })()
 
   return _inFlightExamSync
+}
+
+export const resolveSubjectName = (subjectOrId?: string, examSubjectId?: string): string => {
+  if (!subjectOrId && !examSubjectId) return 'Subject'
+  const isValidUUID = (str?: string) => Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str))
+
+  if (subjectOrId && !isValidUUID(subjectOrId)) {
+    return subjectOrId
+  }
+
+  try {
+    const matchEs = examSubjectsState.find((es) => es.id === examSubjectId || es.id === subjectOrId || es.subject_id === subjectOrId)
+    if (matchEs && matchEs.subject_name && !isValidUUID(matchEs.subject_name)) {
+      return matchEs.subject_name
+    }
+  } catch {}
+
+  try {
+    const allSubjects = academicStore.getSubjects()
+    const match = allSubjects.find((s) => s.id === subjectOrId || s.id === examSubjectId || s.code === subjectOrId)
+    if (match && match.name && !isValidUUID(match.name)) {
+      return match.name
+    }
+  } catch {}
+
+  try {
+    if (examSubjectId) {
+      const matchEs2 = examSubjectsState.find((es) => es.subject_id === examSubjectId)
+      if (matchEs2 && matchEs2.subject_name && !isValidUUID(matchEs2.subject_name)) {
+        return matchEs2.subject_name
+      }
+    }
+  } catch {}
+
+  if (subjectOrId && isValidUUID(subjectOrId)) {
+    return 'Subject'
+  }
+
+  return subjectOrId || 'Subject'
 }
 
 export const examStore = {
@@ -748,7 +920,7 @@ export const examStore = {
       )
 
       const existingRecord = existingIdx >= 0 ? resultsState[existingIdx] : null
-      const published = item.is_published ?? (existingRecord ? existingRecord.is_published : true)
+      const published = item.is_published ?? (existingRecord ? Boolean(existingRecord.is_published) : false)
       
       const recordId = existingRecord
         ? existingRecord.id
@@ -968,7 +1140,7 @@ export const examStore = {
       grade: calc.grade,
       grade_point: calc.gradePoint,
       status: calc.status,
-      is_published: true,
+      is_published: existing.is_published ?? false,
       remarks: result.remarks !== undefined ? result.remarks : existing.remarks,
       updated_at: new Date().toISOString(),
     }
@@ -983,9 +1155,8 @@ export const examStore = {
         grade: updatedRecord.grade,
         grade_point: updatedRecord.grade_point,
         status: updatedRecord.status,
-        is_published: true,
-        published: true,
-        published_date: new Date().toISOString().split('T')[0],
+        is_published: existing.is_published ?? false,
+        published: existing.is_published ?? false,
         remarks: updatedRecord.remarks,
         updated_at: updatedRecord.updated_at,
       }).eq('id', updatedRecord.id)
@@ -1025,7 +1196,7 @@ export const examStore = {
 
     let userCtx: any = null
     try {
-      const authStr = typeof window !== 'undefined' ? localStorage.getItem('eduth_auth_user') : null
+      const authStr = typeof window !== 'undefined' ? (localStorage.getItem('eduth_authenticated_user') || localStorage.getItem('eduth_auth_user')) : null
       if (authStr) userCtx = JSON.parse(authStr)
     } catch {}
 
@@ -1068,13 +1239,16 @@ export const examStore = {
 
     const matchedResults = resultsState.filter((r) => {
       // Must be published!
-      if (r.is_published === false || (r as any).published === false) return false
+      const isPub = Boolean(r.is_published) || Boolean((r as any).published) || (r.is_published as any) === 'true' || ((r as any).published as any) === 'true'
+      if (!isPub) return false
+
       // Must have obtained marks (student appeared for exam)
       if (r.obtained_marks === null || r.obtained_marks === undefined) return false
 
       if (idsToMatch.size > 0) {
         const rSubId = (r.student_id || '').trim()
         const rRoll = (r.roll_no || '').trim()
+        const rName = (r.student_name || '').trim()
         const rSubIdStripped = rSubId.replace(/^STU-/i, '')
         const rRollStripped = rRoll.replace(/^STU-/i, '')
 
@@ -1086,7 +1260,8 @@ export const examStore = {
           idsToMatch.has(rRoll) ||
           idsToMatch.has(rRoll.toLowerCase()) ||
           idsToMatch.has(rRollStripped) ||
-          idsToMatch.has(rRollStripped.toLowerCase())
+          idsToMatch.has(rRollStripped.toLowerCase()) ||
+          (rName && (idsToMatch.has(rName) || idsToMatch.has(rName.toLowerCase())))
         )
       }
 
@@ -1183,10 +1358,12 @@ export function useExamStore() {
   }, [isSuperAdmin, rawExamSubjects, isCollegeMatch])
 
   const scopedResults = useMemo(() => {
-    let res = isSuperAdmin ? rawResults : rawResults.filter((r) => isCollegeMatch(r.college_id))
+    let res = isSuperAdmin || userContext?.role === 'student' || userContext?.role === 'parent'
+      ? rawResults
+      : rawResults.filter((r) => isCollegeMatch(r.college_id))
 
     if (userContext?.role === 'student' || userContext?.role === 'parent') {
-      res = res.filter((r) => r.is_published !== false && (r as any).published !== false)
+      res = res.filter((r) => Boolean(r.is_published) || Boolean((r as any).published) || (r.is_published as any) === 'true' || ((r as any).published as any) === 'true')
     }
     return res
   }, [isSuperAdmin, rawResults, isCollegeMatch, userContext?.role])

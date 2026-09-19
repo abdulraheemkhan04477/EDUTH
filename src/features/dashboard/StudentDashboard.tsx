@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { StatCard } from '../../components/ui'
 import {
   CalendarCheck,
@@ -30,7 +30,7 @@ import { FeeSummaryWidget } from './widgets/FeeSummaryWidget'
 import { useAuth } from '../../app/providers/AuthProvider'
 import { useAcademicStore, isBranchMatch, isSemesterMatch } from '../../lib/academicStore'
 import { useFeeStore, findMatchingFeeStructure, isPaymentForStudent, calculateInstallmentStatuses } from '../../lib/feeStore'
-import { useExamStore } from '../../lib/examStore'
+import { useExamStore, resolveSubjectName, fetchStudentPublishedResultsFromSupabase } from '../../lib/examStore'
 
 export function StudentDashboard() {
   const { user } = useAuth()
@@ -229,9 +229,34 @@ export function StudentDashboard() {
     }
   }, [attendance, currentStudent, attPct])
 
+  useEffect(() => {
+    if (!currentStudent) return
+    const ids = Array.from(
+      new Set(
+        [
+          currentStudent.id,
+          currentStudent.student_id,
+          currentStudent.roll_no,
+          `STU-${currentStudent.roll_no}`,
+          (currentStudent.roll_no || '').replace(/^STU-/i, ''),
+        ].filter(Boolean) as string[]
+      )
+    )
+    fetchStudentPublishedResultsFromSupabase(ids)
+  }, [currentStudent?.id, currentStudent?.student_id, currentStudent?.roll_no])
+
   const publishedExamResults = useMemo(() => {
-    return getStudentPublishedResults(currentStudent.id)
-  }, [getStudentPublishedResults, currentStudent])
+    const rawResults = getStudentPublishedResults(
+      currentStudent.id,
+      currentStudent.roll_no,
+      currentStudent.student_id,
+      currentStudent.email || user?.email
+    )
+    return rawResults.map((r: any) => ({
+      ...r,
+      subject: resolveSubjectName(r.subject, r.exam_subject_id),
+    }))
+  }, [getStudentPublishedResults, currentStudent, user?.email])
 
   // Initials for avatar
   const initials = (currentStudent.name || 'Student')

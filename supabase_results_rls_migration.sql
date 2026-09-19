@@ -104,16 +104,31 @@ ON public.results
 FOR SELECT
 USING (
   (results.is_published = true OR results.published = true)
-  AND EXISTS (
-    SELECT 1 FROM public.profiles p
-    JOIN public.students s ON (s.email = p.email OR s.id::text = p.student_id)
-    WHERE p.id = auth.uid()
-    AND p.role = 'student'
-    AND p.college_id = results.college_id
-    AND (
-      results.student_id = s.id::text
-      OR results.student_id = s.student_id
-      OR results.roll_no = s.roll_no
+  AND (
+    results.student_id = auth.uid()::text
+    OR EXISTS (
+      SELECT 1 FROM public.profiles p
+      LEFT JOIN public.students s ON (
+        s.email = p.email 
+        OR s.id::text = p.student_id 
+        OR s.student_id = p.student_id 
+        OR s.roll_no = p.student_id
+        OR ('STU-' || s.roll_no) = p.student_id
+      )
+      WHERE p.id = auth.uid()
+      AND p.role = 'student'
+      AND (p.college_id = results.college_id OR results.college_id IS NULL)
+      AND (
+        results.student_id = p.id::text
+        OR results.student_id = p.student_id
+        OR (s.id IS NOT NULL AND (
+          results.student_id = s.id::text
+          OR results.student_id = s.student_id
+          OR results.roll_no = s.roll_no
+          OR ('STU-' || s.roll_no) = results.student_id
+          OR ('STU-' || s.roll_no) = results.roll_no
+        ))
+      )
     )
   )
 );
