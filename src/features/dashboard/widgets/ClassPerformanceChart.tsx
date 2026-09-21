@@ -8,13 +8,13 @@ interface ClassPerformance {
 }
 
 const defaultData: ClassPerformance[] = [
-  { class_name: '10-A', average: 82 },
-  { class_name: '10-B', average: 76 },
-  { class_name: '9-A', average: 88 },
-  { class_name: '9-B', average: 71 },
-  { class_name: '8-A', average: 85 },
-  { class_name: '8-B', average: 79 },
-  { class_name: '7-A', average: 90 },
+  { class_name: 'CSE', average: 88 },
+  { class_name: 'ECE', average: 85 },
+  { class_name: 'IT', average: 82 },
+  { class_name: 'AI/ML', average: 91 },
+  { class_name: 'EE', average: 79 },
+  { class_name: 'ME', average: 76 },
+  { class_name: 'Civil', average: 74 },
 ]
 
 function getBarColor(value: number): string {

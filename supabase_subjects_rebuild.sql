@@ -3,7 +3,7 @@
 -- 1. Create Semesters Table
 CREATE TABLE IF NOT EXISTS public.semesters (
   id text PRIMARY KEY,
-  college_id text NOT NULL REFERENCES public.colleges(id) ON DELETE CASCADE,
+  college_id text NOT NULL REFERENCES public.college(id) ON DELETE CASCADE,
   course text NOT NULL,
   name text NOT NULL,
   term text DEFAULT 'Odd',

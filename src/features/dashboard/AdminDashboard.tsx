@@ -16,12 +16,12 @@ const attendanceData = [
 ]
 
 const feeData = [
-  { month: 'Jan', collected: 85000, pending: 15000 },
-  { month: 'Feb', collected: 78000, pending: 22000 },
-  { month: 'Mar', collected: 92000, pending: 8000 },
-  { month: 'Apr', collected: 70000, pending: 30000 },
-  { month: 'May', collected: 88000, pending: 12000 },
-  { month: 'Jun', collected: 95000, pending: 5000 },
+  { month: 'Jan', collected: 3800000, pending: 1200000 },
+  { month: 'Feb', collected: 4200000, pending: 800000 },
+  { month: 'Mar', collected: 4600000, pending: 400000 },
+  { month: 'Apr', collected: 3100000, pending: 1900000 },
+  { month: 'May', collected: 4100000, pending: 900000 },
+  { month: 'Jun', collected: 4800000, pending: 200000 },
 ]
 
 export function AdminDashboard() {
@@ -67,7 +67,12 @@ export function AdminDashboard() {
             <BarChart data={feeData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
               <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'var(--color-ink-400)' }} />
-              <YAxis tick={{ fontSize: 12, fill: 'var(--color-ink-400)' }} />
+              <YAxis
+                domain={[100000, 5000000]}
+                ticks={[100000, 1000000, 2000000, 3000000, 4000000, 5000000]}
+                tickFormatter={(v) => `₹${v >= 100000 ? `${(v / 100000).toFixed(0)}L` : v}`}
+                tick={{ fontSize: 12, fill: 'var(--color-ink-400)' }}
+              />
               <Tooltip formatter={(value: any) => formatCurrency(Number(value || 0))} />
               <Legend />
               <Bar dataKey="collected" fill="var(--color-success-600)" name="Collected" radius={[4, 4, 0, 0]} />
